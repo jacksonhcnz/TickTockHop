@@ -22,15 +22,15 @@ textarea{width:100%;height:50px;background:var(--panel);color:var(--fg);border:1
 #hint,#pad{color:var(--dim);margin:6px 0 0;font-size:13px}
 [hidden]{display:none!important}
 </style></head><body><div id="app">
-<header><b>Tick Tock Hop</b><small style="color:var(--dim)">v16</small><span id="lbl"></span><span class="sp"></span>
+<header><b>Tick Tock Hop</b><small style="color:var(--dim)">v17</small><span id="lbl"></span><span class="sp"></span>
 <button id="bSn">Sound: on</button><button id="bM">Menu (Esc)</button><button id="bR">Restart (R)</button><button id="bE">Editor (E)</button></header>
 <div id="wrap"><canvas id="c" width="840" height="600" tabindex="0"></canvas>
 <div id="menu"><h1>Tick Tock Hop</h1>
 <p>Swing the rotating hand from dot to dot and reach the green goal. Avoid enemy hands and mines, and land on blue point dots to score.</p>
 <div id="lv"></div>
 <div><button id="bC">Play custom level</button> <button id="bEd">Level editor</button> <button id="bL">Library &amp; codes</button></div>
-<p>Keyboard: <b>Z / ← / Space</b> reverse spin · <b>X / →</b> jump · <b>C / ↑</b> jump and reverse · hold <b>S / ↓</b> to swing or <b>A</b> to bounce along<br>
-Controller: <b>X / D-pad ←</b> reverse · <b>A / D-pad →</b> jump · <b>B / D-pad ↑</b> jump and reverse · hold <b>RB / D-pad ↓</b> swing, <b>LB</b> bounce along · <b>Start</b> menu</p></div>
+<p>Keyboard: hold <b>A</b> to bounce along · hold <b>S</b> to swing · <b>Space</b> to reverse spin<br>
+Controller: hold <b>LB</b> to bounce along · hold <b>RB</b> to swing · <b>X</b> to reverse spin · <b>Start</b> menu</p></div>
 <div id="lib" hidden><h2>Level library</h2><p>Paste a level code (starts with CW1-) or a share link to add it. Levels you save from the editor appear here too.</p><textarea id="imp" placeholder="CW1-..."></textarea><div><button id="bImp">Import level</button> <button id="bBack">Back</button></div><div id="msg" style="min-height:18px"></div><div id="list"></div></div></div>
 <div id="tools" hidden>
 <button data-t="dot">Dot</button><button data-t="start">Start</button><button data-t="goal">Goal</button><button data-t="mine">Mine</button><button data-t="point">Point dot</button><button data-t="enemy">Enemy path</button><button data-t="erase">Erase</button>
@@ -103,12 +103,12 @@ if(mode=="play"){if(k=="rev"){P.dir*=-1;SFX.rev()}else if(k=="jump")jump(0);else
 if(mode=="dead"){if(k=="confirm"||k=="restart")start(cur,testing);else if(k=="menu")back();return}
 if(mode=="win"){if(k=="confirm")next();else if(k=="menu")back();return}
 if(mode=="edit"){if(k=="confirm")fin();else if(k=="menu")menu()}}
-const KM={z:"rev",ArrowLeft:"rev",x:"jump",ArrowRight:"jump"," ":"rev",c:"jumprev",ArrowUp:"jumprev",Enter:"confirm",r:"restart",Escape:"menu"};
+const KM={" ":"rev",Enter:"confirm",r:"restart",Escape:"menu"};
 addEventListener("keydown",e=>{if(/TEXTAREA|SELECT|INPUT/.test(e.target.tagName))return;
 if(e.key=="m"||e.key=="M"){tglSnd();return}if(e.key=="e"&&mode!="play"){editor();return}if(e.key=="e"&&mode=="play"){editor();return}
 const k=KM[e.key.length==1?e.key.toLowerCase():e.key];if(k){e.preventDefault();if(!e.repeat)act(k)}});
-addEventListener("keydown",e=>{if(!/TEXTAREA|SELECT|INPUT/.test(e.target.tagName)&&/^[aAsS]$|ArrowDown/.test(e.key)){e.preventDefault();glideK=/[aA]/.test(e.key)?2:1}});addEventListener("keyup",e=>{if(/^[aAsS]$|ArrowDown/.test(e.key))glideK=0});addEventListener("blur",()=>glideK=0);
-const PAD={0:"jump",1:"jumprev",2:"rev",3:"restart",9:"menu",14:"rev",15:"jump",12:"jumprev"},gp={};let lastPad="";
+addEventListener("keydown",e=>{if(!/TEXTAREA|SELECT|INPUT/.test(e.target.tagName)&&/^[aAsS]$/.test(e.key)){e.preventDefault();glideK=/[aA]/.test(e.key)?2:1}});addEventListener("keyup",e=>{if(/^[aAsS]$/.test(e.key))glideK=0});addEventListener("blur",()=>glideK=0);
+const PAD={2:"rev",3:"restart",9:"menu",14:"rev"},gp={};let lastPad="";
 function poll(){const g=(navigator.getGamepads?[...navigator.getGamepads()]:[]).filter(Boolean);glideP=g.some(p=>[5,13].some(i=>p.buttons[i]&&p.buttons[i].pressed))?1:g.some(p=>p.buttons[4]&&p.buttons[4].pressed)?2:0;
 g.forEach(p=>{const pr=gp[p.index]||(gp[p.index]=[]);p.buttons.forEach((b,i)=>{if(b.pressed&&!pr[i]){let k=PAD[i];if(i==0&&mode!="play"&&mode!="edit")k="confirm";if(k)act(k)}pr[i]=b.pressed})});
 const t=g.length?"Controller connected: "+g[0].id.slice(0,44):"No controller detected. Press a button on it after clicking the game.";if(t!=lastPad){$("#pad").textContent=t;lastPad=t}}
