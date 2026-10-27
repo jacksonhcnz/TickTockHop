@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tick Tock Hop</title>
+<style>
+:root{--bg:#f4f1ea;--fg:#1d1d22;--dim:#7a766a;--grid:#d4cfc0;--acc:#0b6bcb;--bad:#d1302a;--good:#1f9d55;--panel:#e9e4d6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161c;--fg:#ecebe4;--dim:#8a8c99;--grid:#2a2c38;--acc:#4da3ff;--bad:#ff5b52;--good:#4ade80;--panel:#20222b}}
+:root[data-theme="dark"]{--bg:#15161c;--fg:#ecebe4;--dim:#8a8c99;--grid:#2a2c38;--acc:#4da3ff;--bad:#ff5b52;--good:#4ade80;--panel:#20222b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;justify-content:center}
+#app{width:100%;max-width:860px;padding:10px}
+header{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+header b{font-size:18px}.sp{flex:1}
+button,select{background:var(--panel);color:var(--fg);border:1px solid var(--grid);border-radius:6px;padding:6px 10px;font:inherit;cursor:pointer}
+button:hover{border-color:var(--acc)}button.on{background:var(--acc);color:var(--bg);border-color:var(--acc)}
+#wrap{position:relative}canvas{width:100%;height:auto;display:block;border:1px solid var(--grid);border-radius:8px;outline:none}
+#menu,#lib{position:absolute;inset:0;background:color-mix(in srgb,var(--bg) 92%,transparent);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:16px}
+#menu h1{margin:0;font-size:34px}#lib{overflow:auto;justify-content:flex-start}#lib h2{margin:0}#list{width:100%;max-width:560px;display:flex;flex-direction:column;gap:6px}.it{display:flex;gap:6px;align-items:center;background:var(--panel);border:1px solid var(--grid);border-radius:6px;padding:6px 8px}.it span{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}input{background:var(--panel);color:var(--fg);border:1px solid var(--grid);border-radius:6px;padding:6px 8px;font:inherit}#menu p{margin:0;color:var(--dim);max-width:560px;line-height:1.45}
+#lv{display:grid;grid-template-columns:repeat(8,44px);gap:6px}
+#tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
+textarea{width:100%;height:50px;background:var(--panel);color:var(--fg);border:1px solid var(--grid);border-radius:6px;font:12px monospace;margin-top:6px}
+#hint,#pad{color:var(--dim);margin:6px 0 0;font-size:13px}
+[hidden]{display:none!important}
+</style></head><body><div id="app">
+<header><b>Tick Tock Hop</b><small style="color:var(--dim)">v14</small><span id="lbl"></span><span class="sp"></span>
+<button id="bM">Menu (Esc)</button><button id="bR">Restart (R)</button><button id="bE">Editor (E)</button></header>
+<div id="wrap"><canvas id="c" width="840" height="600" tabindex="0"></canvas>
+<div id="menu"><h1>Tick Tock Hop</h1>
+<p>Swing the rotating hand from dot to dot and reach the green goal. Avoid enemy hands and mines, and land on blue point dots to score.</p>
+<div id="lv"></div>
+<div><button id="bC">Play custom level</button> <button id="bEd">Level editor</button> <button id="bL">Library &amp; codes</button></div>
+<p>Keyboard: <b>Z / ← / Space</b> reverse spin · <b>X / →</b> jump · <b>C / ↑</b> jump and reverse · hold <b>S / ↓</b> to swing or <b>A</b> to bounce along<br>
+Controller: <b>X / D-pad ←</b> reverse · <b>A / D-pad →</b> jump · <b>B / D-pad ↑</b> jump and reverse · hold <b>RB / D-pad ↓</b> swing, <b>LB</b> bounce along · <b>Start</b> menu</p></div>
+<div id="lib" hidden><h2>Level library</h2><p>Paste a level code (starts with CW1-) or a share link to add it. Levels you save from the editor appear here too.</p><textarea id="imp" placeholder="CW1-..."></textarea><div><button id="bImp">Import level</button> <button id="bBack">Back</button></div><div id="msg" style="min-height:18px"></div><div id="list"></div></div></div>
+<div id="tools" hidden>
+<button data-t="dot">Dot</button><button data-t="start">Start</button><button data-t="goal">Goal</button><button data-t="mine">Mine</button><button data-t="point">Point dot</button><button data-t="enemy">Enemy path</button><button data-t="erase">Erase</button>
+
+<select id="dsel"><option value="1">Spin ↻</option><option value="-1">Spin ↺</option></select>
+<button id="bF">Finish enemy (Enter)</button><button id="bT">Test</button><button id="bS">Save</button><input id="nm" placeholder="Level name" maxlength="24"><button id="bS2">Save to library</button><button id="bX">Copy code</button><button id="bI">Import code</button><button id="bK">Clear</button>
+<textarea id="code" placeholder="Level code appears here. Paste a code and press Import code."></textarea></div>
+<p id="hint"></p><p id="pad"></p></div>
+<script>
+const L=60,OX=60,OY=60,W=2.6,$=s=>document.querySelector(s),cv=$("#c"),x=cv.getContext("2d");
+const C={};function rc(){const s=getComputedStyle(document.documentElement);["bg","fg","dim","grid","acc","bad","good"].forEach(k=>C[k]=s.getPropertyValue("--"+k).trim())}
+rc();matchMedia("(prefers-color-scheme: dark)").addEventListener("change",rc);
+function ex(l){const s=new Set();l.d.forEach(([a,b,c,d])=>{const n=Math.max(Math.abs(c-a),Math.abs(d-b));for(let i=0;i<=n;i++)s.add((a+Math.sign(c-a)*i)+","+(b+Math.sign(d-b)*i))});return{s:l.s,g:l.g,dots:[...s].map(k=>k.split(",").map(Number)),m:l.m||[],e:l.e||[]}}
+const LV=[
+{s:[1,4],g:[10,4],d:[[1,4,10,4]]},
+{s:[1,1],g:[9,6],d:[[1,1,6,1],[6,1,6,6],[6,6,9,6]]},
+{s:[1,4],g:[11,4],d:[[1,4,11,4]],m:[[2.5,3.5],[5.5,4.5],[8.5,3.5]]},
+{s:[1,6],g:[11,2],d:[[1,6,6,6],[6,6,6,2],[6,2,11,2],[4,5,4,5],[8,3,8,3]],e:[{p:[[4,5]],d:1},{p:[[8,3]],d:-1}]},
+{s:[1,4],g:[11,4],d:[[1,4,11,4],[4,3,7,3],[8,5,10,5]],m:[[9.5,3.5]],e:[{p:[[4,3],[5,3],[6,3],[7,3]],s:1},{p:[[8,5],[9,5],[10,5]],s:1.2}]},
+{s:[1,7],g:[11,1],d:[[1,7,5,7],[5,7,5,4],[5,4,9,4],[9,4,9,1],[9,1,11,1],[6,6,6,6],[8,2,8,2]],m:[[2.5,6.5],[6.5,4.5],[8.5,3.5],[4.5,3.5]],e:[{p:[[6,6]],d:1},{p:[[8,2]],d:-1,s:1.2}]},
+{s:[1,1],g:[11,7],d:[[1,1,11,1],[11,1,11,7],[1,1,1,7],[1,7,11,7],[5,2,8,2],[10,3,10,6]],m:[[5.5,.5],[2.5,7.5],[7.5,6.5],[11.5,3.5]],e:[{p:[[5,2],[6,2],[7,2],[8,2]]},{p:[[10,3],[10,4],[10,5],[10,6]],s:1.1}]},
+{s:[1,4],g:[11,4],d:[[1,4,11,4],[3,3,3,3],[5,5,5,5],[7,3,7,3],[9,5,9,5]],m:[[9.5,3.5],[5.5,4.5]],e:[{p:[[3,3]],d:1},{p:[[5,5]],d:-1,s:1.3},{p:[[7,3]],d:1,s:.8},{p:[[9,5]],d:-1,s:1.1}]}
+].map(ex);
+[[[4,4],[7,4]],[[6,3],[8,6]],[[5,4],[8,4]],[[6,4],[9,2]],[[6,4],[9,4]],[[5,5],[9,3]],[[1,4],[6,7],[11,4]],[[5,4],[8,4]]].forEach((p,i)=>LV[i].pt=p);
+const pos=(c,r)=>[OX+L*c,OY+L*r],clone=o=>JSON.parse(JSON.stringify(o)),ang=(a,b)=>Math.atan2(b[1]-a[1],b[0]-a[0]);
+let vsig="",tsig="",score=0,glideK=0,glideP=0,mode="menu",cur=null,P,E=[],idx=0,testing=false,custom=null,tool="dot",pe=[];
+let ed={s:[1,4],g:[4,4],dots:[[1,4],[2,4],[3,4],[4,4]],m:[],e:[]};
+try{const s=localStorage.getItem("cw_custom");if(s){custom=JSON.parse(s);ed=clone(custom)}}catch(e){}
+function mk(e){const o={p:e.p,s:e.s||1,d:e.d||1,i:0,st:1,a:0};if(e.p.length>1)o.a=ang(pos(...e.p[0]),pos(...e.p[1]));return o}
+function updE(o,dt){const w=W;if(o.p.length==1){o.a+=o.d*w*dt;return}
+let n=o.i+o.st;if(n<0||n>=o.p.length){o.st=-o.st;n=o.i+o.st}
+const t=ang(pos(...o.p[o.i]),pos(...o.p[n])),df=Math.atan2(Math.sin(t-o.a),Math.cos(t-o.a)),s=w*dt;
+if(Math.abs(df)<=s){o.a=t+Math.PI;o.i=n}else o.a+=Math.sign(df)*s}
+function ps(p,a,b){const dx=b[0]-a[0],dy=b[1]-a[1];let t=((p[0]-a[0])*dx+(p[1]-a[1])*dy)/(dx*dx+dy*dy||1);t=Math.max(0,Math.min(1,t));return Math.hypot(p[0]-a[0]-t*dx,p[1]-a[1]-t*dy)}
+const cr=(a,b,c)=>(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
+function ss(a,b,c,d){if(cr(a,b,c)*cr(a,b,d)<0&&cr(c,d,a)*cr(c,d,b)<0)return 0;return Math.min(ps(a,c,d),ps(b,c,d),ps(c,a,b),ps(d,a,b))}
+const tip=(q,a)=>[q[0]+L*Math.cos(a),q[1]+L*Math.sin(a)];
+function near(){const a=pos(P.c,P.r),t=tip(a,P.a);return cur.dots.find(d=>(d[0]!=P.c||d[1]!=P.r)&&Math.hypot(pos(...d)[0]-t[0],pos(...d)[1]-t[1])<18)}
+function jump(rev){const d=near();if(!d)return;const o=pos(P.c,P.r),n=pos(...d);P.pc=P.c;P.pr=P.r;P.c=d[0];P.r=d[1];const pi=(cur.pt||[]).findIndex(p=>p[0]==d[0]&&p[1]==d[1]);if(pi>=0){cur.pt.splice(pi,1);score++}P.a=Math.atan2(o[1]-n[1],o[0]-n[0]);if(rev)P.dir*=-1;if(d[0]==cur.g[0]&&d[1]==cur.g[1]){mode="win";if(testing&&tsig)vsig=tsig}}
+function hit(){const a=pos(P.c,P.r),b=tip(a,P.a);
+for(const m of cur.m)if(ps(pos(...m),a,b)<11)return 1;
+for(const o of E){const q=pos(...o.p[o.i]);const t=tip(q,o.a),u=[Math.cos(o.a),Math.sin(o.a)],q2=[q[0]+15*u[0],q[1]+15*u[1]],t2=[t[0]-15*u[0],t[1]-15*u[1]];if(ss([a[0]+15*Math.cos(P.a),a[1]+15*Math.sin(P.a)],b,q2,t2)<4)return 1}return 0}
+function start(l,t){cur=clone(l);cur.pt=cur.pt||[];score=0;testing=!!t;P={c:cur.s[0],r:cur.s[1],a:0,dir:1};E=cur.e.map(mk);mode="play";ui()}
+function play(i){idx=i;cname="";src="";start(LV[i])}
+function menu(){mode="menu";ui()}
+function back(){testing?(mode="edit",ui()):src=="lib"?openLib():menu()}
+function next(){if(testing)return back();if(cname)return back();idx<LV.length-1?play(idx+1):menu()}
+function editor(){mode="edit";pe=[];ui()}
+function ui(){$("#menu").hidden=mode!="menu";$("#tools").hidden=mode!="edit";$("#lib").hidden=mode!="lib";
+$("#lbl").textContent=mode=="edit"?"Editor":mode=="menu"?"":mode=="lib"?"Library":testing?"Testing":cname||"Level "+(idx+1)+"/"+LV.length;
+$("#hint").textContent=mode=="edit"?"Pick a tool, then click grid points (mines snap to the center of four dots). Enemy path: click adjacent dots, then Finish (Enter or right-click). One point makes a spinner; more makes a patrol.":"";
+document.querySelectorAll("[data-t]").forEach(b=>b.classList.toggle("on",b.dataset.t==tool));cv.focus()}
+function act(k){
+if(mode=="lib"){if(k=="menu")menu();return}
+if(mode=="menu"){if(k=="confirm")play(0);return}
+if(mode=="play"){if(k=="rev")P.dir*=-1;else if(k=="jump")jump(0);else if(k=="jumprev")jump(1);else if(k=="restart")start(cur,testing);else if(k=="menu")back();return}
+if(mode=="dead"){if(k=="confirm"||k=="restart")start(cur,testing);else if(k=="menu")back();return}
+if(mode=="win"){if(k=="confirm")next();else if(k=="menu")back();return}
+if(mode=="edit"){if(k=="confirm")fin();else if(k=="menu")menu()}}
+const KM={z:"rev",ArrowLeft:"rev",x:"jump",ArrowRight:"jump"," ":"rev",c:"jumprev",ArrowUp:"jumprev",Enter:"confirm",r:"restart",Escape:"menu"};
+addEventListener("keydown",e=>{if(/TEXTAREA|SELECT|INPUT/.test(e.target.tagName))return;
+if(e.key=="e"&&mode!="play"){editor();return}if(e.key=="e"&&mode=="play"){editor();return}
+const k=KM[e.key.length==1?e.key.toLowerCase():e.key];if(k){e.preventDefault();if(!e.repeat)act(k)}});
+addEventListener("keydown",e=>{if(!/TEXTAREA|SELECT|INPUT/.test(e.target.tagName)&&/^[aAsS]$|ArrowDown/.test(e.key)){e.preventDefault();glideK=/[aA]/.test(e.key)?2:1}});addEventListener("keyup",e=>{if(/^[aAsS]$|ArrowDown/.test(e.key))glideK=0});addEventListener("blur",()=>glideK=0);
+const PAD={0:"jump",1:"jumprev",2:"rev",3:"restart",9:"menu",14:"rev",15:"jump",12:"jumprev"},gp={};let lastPad="";
+function poll(){const g=(navigator.getGamepads?[...navigator.getGamepads()]:[]).filter(Boolean);glideP=g.some(p=>[5,13].some(i=>p.buttons[i]&&p.buttons[i].pressed))?1:g.some(p=>p.buttons[4]&&p.buttons[4].pressed)?2:0;
+g.forEach(p=>{const pr=gp[p.index]||(gp[p.index]=[]);p.buttons.forEach((b,i)=>{if(b.pressed&&!pr[i]){let k=PAD[i];if(i==0&&mode!="play"&&mode!="edit")k="confirm";if(k)act(k)}pr[i]=b.pressed})});
+const t=g.length?"Controller connected: "+g[0].id.slice(0,44):"No controller detected. Press a button on it after clicking the game.";if(t!=lastPad){$("#pad").textContent=t;lastPad=t}}
+function fin(){if(pe.length){ed.e.push({p:pe,s:1,d:+$("#dsel").value});pe=[]}}
+function editAt(c,r,hc,hr){const k=a=>a[0]==c&&a[1]==r,di=ed.dots.findIndex(k),mi=ed.m.findIndex(k),sg=k(ed.s)||k(ed.g);
+if(tool=="dot"){if(di>=0){if(!sg){ed.dots.splice(di,1);ed.pt=(ed.pt||[]).filter(p=>!k(p));ed.e=ed.e.filter(e=>!e.p.some(k))}}else{ed.dots.push([c,r]);if(mi>=0)ed.m.splice(mi,1)}}
+else if(tool=="start"||tool=="goal"){if(mi>=0)ed.m.splice(mi,1);if(di<0)ed.dots.push([c,r]);ed[tool=="start"?"s":"g"]=[c,r]}
+else if(tool=="point"){if(mi>=0)ed.m.splice(mi,1);if(di<0)ed.dots.push([c,r]);ed.pt=ed.pt||[];if(!sg){const pi=ed.pt.findIndex(k);pi>=0?ed.pt.splice(pi,1):ed.pt.push([c,r])}}
+else if(tool=="mine"){const mj=ed.m.findIndex(a=>a[0]==hc&&a[1]==hr);if(mj>=0)ed.m.splice(mj,1);else if(!ed.dots.some(d=>d[0]==hc&&d[1]==hr))ed.m.push([hc,hr])}
+else if(tool=="enemy"){const l=pe[pe.length-1];if(di>=0&&(!l||Math.abs(l[0]-c)+Math.abs(l[1]-r)==1))pe.push([c,r])}
+else if(tool=="erase"){if(di>=0&&!sg){ed.dots.splice(di,1);ed.pt=(ed.pt||[]).filter(p=>!k(p))}if(mi>=0)ed.m.splice(mi,1);ed.e=ed.e.filter(e=>!e.p.some(k));pe=[]}}
+cv.addEventListener("mousedown",e=>{cv.focus();if(mode!="edit")return;const b=cv.getBoundingClientRect(),ux=((e.clientX-b.left)*840/b.width-OX)/L,uy=((e.clientY-b.top)*600/b.height-OY)/L,c=Math.round(ux),r=Math.round(uy),hc=Math.floor(ux)+.5,hr=Math.floor(uy)+.5;
+if(e.button==2){fin();return}if(tool=="erase"){const mj=ed.m.findIndex(a=>Math.hypot(a[0]-ux,a[1]-uy)<.3);if(mj>=0){ed.m.splice(mj,1);return}}const ing=c>=0&&c<=12&&r>=0&&r<=8;if(tool!="mine"&&!ing)return;if(hc<-.5||hc>12.5||hr<-.5||hr>8.5)return;editAt(c,r,hc,hr)});
+cv.oncontextmenu=e=>e.preventDefault();
+document.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{fin();tool=b.dataset.t;ui()});
+$("#bM").onclick=()=>menu();$("#bR").onclick=()=>{if(cur&&mode!="edit"&&mode!="menu")start(cur,testing)};$("#bE").onclick=editor;$("#bEd").onclick=editor;
+$("#bC").onclick=()=>{cname="Custom";src="";start(custom||ed)};$("#bF").onclick=()=>{fin()};$("#bK").onclick=()=>{ed={s:[1,4],g:[4,4],dots:[[1,4],[2,4],[3,4],[4,4]],m:[],e:[]};pe=[]};
+$("#bT").onclick=()=>{fin();tsig=enc(ed,"");start(ed,true)};
+$("#bS").onclick=()=>{fin();custom=clone(ed);try{localStorage.setItem("cw_custom",JSON.stringify(custom))}catch(e){}$("#code").value="Saved. Use Menu then Play custom level."};
+$("#bX").onclick=()=>{fin();if(enc(ed,"")!=vsig){$("#code").value="Locked: beat your level in Test once first. Any edit to the level needs a new test.";return}$("#code").value=enc(ed,$("#nm").value);copy($("#code").value).then(ok=>{if(ok)$("#hint").textContent="Code copied to the clipboard."})};
+$("#bI").onclick=()=>{try{const r=dec($("#code").value);ed=r.level;$("#nm").value=r.name;pe=[];$("#code").value="Imported \u201c"+r.name+"\u201d."}catch(e){$("#code").value=String(e)}};
+const bt=$("#lv");LV.forEach((_,i)=>{const b=document.createElement("button");b.textContent=i+1;b.onclick=()=>play(i);bt.appendChild(b)});
+function hand(q,a,col,w){const t=tip(q,a);x.strokeStyle=col;x.lineWidth=w;x.lineCap="round";x.beginPath();x.moveTo(...q);x.lineTo(...t);x.stroke();x.fillStyle=col;x.beginPath();x.arc(q[0],q[1],w*1.5,0,7);x.fill();x.beginPath();x.arc(t[0],t[1],w*.8,0,7);x.fill()}
+function mine(q){x.fillStyle=C.bad;x.strokeStyle=C.bad;x.lineWidth=2;for(let i=0;i<8;i++){const a=i*Math.PI/4;x.beginPath();x.moveTo(q[0]+7*Math.cos(a),q[1]+7*Math.sin(a));x.lineTo(q[0]+13*Math.cos(a),q[1]+13*Math.sin(a));x.stroke()}x.beginPath();x.arc(q[0],q[1],8,0,7);x.fill()}
+function msg(t,s,col){x.fillStyle=C.bg;x.globalAlpha=.8;x.fillRect(0,230,840,140);x.globalAlpha=1;x.fillStyle=col;x.font="bold 36px system-ui,sans-serif";x.textAlign="center";x.fillText(t,420,292);x.fillStyle=C.fg;x.font="18px system-ui,sans-serif";x.fillText(s,420,332)}
+function draw(){x.fillStyle=C.bg;x.fillRect(0,0,840,600);
+x.fillStyle=C.grid;for(let c=0;c<13;c++)for(let r=0;r<9;r++){x.beginPath();x.arc(...pos(c,r),mode=="edit"?3:1.5,0,7);x.fill()}
+if(mode=="edit"&&tool=="mine")for(let c=-1;c<13;c++)for(let r=-1;r<9;r++){x.beginPath();x.arc(...pos(c+.5,r+.5),2,0,7);x.fill()}
+const lv=mode=="edit"?ed:cur;if(!lv||mode=="menu")return;
+const has=(c,r)=>lv.dots.some(d=>d[0]==c&&d[1]==r);
+x.strokeStyle=C.grid;x.lineWidth=3;x.beginPath();x.stroke();
+lv.m.forEach(m=>mine(pos(...m)));
+const nd=mode!="edit"&&P?near():null;
+lv.dots.forEach(d=>{const q=pos(...d),g=d[0]==lv.g[0]&&d[1]==lv.g[1],s=d[0]==lv.s[0]&&d[1]==lv.s[1],isp=(lv.pt||[]).some(p=>p[0]==d[0]&&p[1]==d[1]);if(isp){const rad=22+3*Math.sin(performance.now()/350),gr=x.createRadialGradient(q[0],q[1],3,q[0],q[1],rad);gr.addColorStop(0,C.acc);gr.addColorStop(1,"rgba(77,163,255,0)");x.globalAlpha=.6;x.fillStyle=gr;x.beginPath();x.arc(q[0],q[1],rad,0,7);x.fill();x.globalAlpha=1}x.beginPath();x.arc(q[0],q[1],g?12:isp?9:7,0,7);x.fillStyle=g?C.good:isp?C.acc:C.bg;x.fill();x.lineWidth=2.5;x.strokeStyle=g?C.good:isp?C.acc:s?C.acc:C.fg;x.stroke();if(g){x.beginPath();x.arc(q[0],q[1],17,0,7);x.stroke()}
+if(nd&&nd[0]==d[0]&&nd[1]==d[1]){x.strokeStyle=C.acc;x.lineWidth=3;x.beginPath();x.arc(q[0],q[1],15,0,7);x.stroke()}});
+if(mode=="edit"){x.font="12px system-ui";x.textAlign="center";x.fillStyle=C.acc;const s=pos(...lv.s);x.fillText("START",s[0],s[1]-14);const vv=enc(ed,"")==vsig;x.textAlign="left";x.font="bold 14px system-ui,sans-serif";x.fillStyle=vv?C.good:C.dim;x.fillText(vv?"Tested: you can copy the code":"Not tested yet: beat it in Test to unlock Copy code",16,24);x.textAlign="center";
+lv.e.forEach(e=>{x.strokeStyle=C.bad;x.setLineDash([6,5]);x.lineWidth=2;x.beginPath();e.p.forEach((p,i)=>i?x.lineTo(...pos(...p)):x.moveTo(...pos(...p)));x.stroke();x.setLineDash([]);const q=pos(...e.p[0]);hand(q,e.p.length>1?ang(q,pos(...e.p[1])):0,C.bad,5)});
+if(pe.length){x.strokeStyle=C.acc;x.setLineDash([3,4]);x.beginPath();pe.forEach((p,i)=>i?x.lineTo(...pos(...p)):x.moveTo(...pos(...p)));x.stroke();x.setLineDash([]);pe.forEach(p=>{x.beginPath();x.arc(...pos(...p),6,0,7);x.stroke()})}return}
+E.forEach(o=>hand(pos(...o.p[o.i]),o.a,C.bad,5));
+hand(pos(P.c,P.r),P.a,C.acc,6);const tp=score+cur.pt.length;if(tp){x.fillStyle=C.acc;x.font="bold 16px system-ui,sans-serif";x.textAlign="left";x.fillText("Points "+score+" / "+tp,16,28)}
+if(mode=="dead")msg("Zapped!","Enter / A to retry · Esc for menu",C.bad);
+if(mode=="win")msg("Level clear!",testing?"Verified! You can now copy its code. Enter / A returns to the editor":"Enter / A to continue",C.good)}
+let lt=performance.now();
+function loop(n){const dt=Math.min(.05,(n-lt)/1000);lt=n;poll();
+if(mode=="play"){if(P.pc!==undefined){const a=pos(P.c,P.r),t=tip(a,P.a),q=pos(P.pc,P.pr);if(Math.hypot(t[0]-q[0],t[1]-q[1])>30)P.pc=P.pr=undefined}const gl=glideK||glideP;if(gl){const d=near();if(d&&!(d[0]==P.pc&&d[1]==P.pr))jump(gl==1)}P.a+=P.dir*W*dt;E.forEach(o=>updE(o,dt));if(mode=="play"&&hit())mode="dead"}
+draw();requestAnimationFrame(loop)}
+let cname="",src="",lib=[];
+try{lib=JSON.parse(localStorage.getItem("cw_lib")||"[]")}catch(e){lib=[]}
+const B64=s=>btoa(unescape(encodeURIComponent(s))).split("+").join("-").split("/").join("_").split("=").join(""),U64=s=>{s=s.split("-").join("+").split("_").join("/");while(s.length%4)s+="=";return decodeURIComponent(escape(atob(s)))},ID=p=>p[0]+13*p[1],PT=i=>[i%13,Math.floor(i/13)];
+function enc(l,n){return "CW1-"+B64(JSON.stringify({n:(n||"Untitled").slice(0,24),s:ID(l.s),g:ID(l.g),d:l.dots.map(ID),m:l.m,e:l.e.map(e=>({p:e.p.map(ID),d:e.d})),p:(l.pt||[]).map(ID)}))}
+function dec(code){code=String(code).trim();const h=code.lastIndexOf("#");if(h>=0)code=code.slice(h+1);
+if(!code.startsWith("CW1-"))throw "That is not a level code. Codes start with CW1-";
+let o;try{o=JSON.parse(U64(code.slice(4)))}catch(e){throw "The code is damaged or incomplete."}
+const ok=i=>Number.isInteger(i)&&i>=0&&i<117,A=Array.isArray;
+if(!o||!A(o.d)||o.d.length>117||!o.d.every(ok)||!ok(o.s)||!ok(o.g))throw "The code is not a valid level.";
+const D=new Set(o.d);if(!D.has(o.s)||!D.has(o.g)||o.s==o.g)throw "The level needs a start and a goal on different dots.";
+const m=(A(o.m)?o.m:[]).slice(0,60);
+if(!m.every(p=>A(p)&&p.length==2&&p.every(v=>Number.isFinite(v)&&Number.isInteger(v*2))&&p[0]>=-.5&&p[0]<=12.5&&p[1]>=-.5&&p[1]<=8.5))throw "The mines in this code are invalid.";
+const e=(A(o.e)?o.e:[]).slice(0,12);
+for(const q of e){if(!q||!A(q.p)||!q.p.length||q.p.length>20||!q.p.every(i=>ok(i)&&D.has(i)))throw "An enemy in this code is invalid.";for(let i=1;i<q.p.length;i++){const a=PT(q.p[i-1]),b=PT(q.p[i]);if(Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1])!=1)throw "An enemy path in this code is invalid."}}
+const pt=(A(o.p)?o.p:[]).filter(i=>ok(i)&&D.has(i)&&i!=o.s&&i!=o.g);
+return{name:String(o.n||"Untitled").slice(0,24),code:code,level:{s:PT(o.s),g:PT(o.g),dots:[...D].map(PT),m:m,e:e.map(q=>({p:q.p.map(PT),s:1,d:q.d==-1?-1:1})),pt:pt.map(PT)}}}
+function saveLib(){try{localStorage.setItem("cw_lib",JSON.stringify(lib))}catch(e){}}
+function say(t,bad){const m=$("#msg");m.textContent=t;m.style.color=bad?"var(--bad)":"var(--good)"}
+async function copy(t){try{await navigator.clipboard.writeText(t);return 1}catch(e){return 0}}
+function addLib(r){if(lib.some(x=>x.code==r.code))return 0;lib.push({name:r.name,code:r.code});saveLib();return 1}
+function renderLib(){const L=$("#list");L.innerHTML="";if(!lib.length){L.innerHTML='<p style="color:var(--dim)">No saved levels yet.</p>';return}
+lib.forEach((it,i)=>{const d=document.createElement("div");d.className="it";const s=document.createElement("span");s.textContent=it.name;d.appendChild(s);
+[["Play",()=>playLib(i)],["Copy code",async()=>{if(await copy(it.code))say("Code copied.");else{$("#imp").value=it.code;$("#imp").select();say("Copy the code from the box above.")}}],["Delete",()=>{lib.splice(i,1);saveLib();renderLib()}]].forEach(([t,f])=>{const b=document.createElement("button");b.textContent=t;b.onclick=f;d.appendChild(b)});L.appendChild(d)})}
+function openLib(){mode="lib";renderLib();say("");ui()}
+function playLib(i){try{const r=dec(lib[i].code);idx=0;start(r.level);cname=r.name;src="lib";ui()}catch(e){say(String(e),1)}}
+$("#bL").onclick=openLib;$("#bBack").onclick=menu;
+$("#bImp").onclick=()=>{try{const r=dec($("#imp").value),n=addLib(r);renderLib();say(n?"Imported \u201c"+r.name+"\u201d.":"That level is already in your library.");if(n)$("#imp").value=""}catch(e){say(String(e),1)}};
+$("#bS2").onclick=()=>{fin();if(enc(ed,"")!=vsig){$("#code").value="Locked: beat your level in Test once first.";return}const nm=($("#nm").value||"Untitled").slice(0,24);$("#code").value=addLib({name:nm,code:enc(ed,nm)})?"Saved to your library. Open it from Menu, then Library & codes.":"That level is already in your library."};
+ui();requestAnimationFrame(loop);
+if(/^#CW1-/.test(location.hash)){try{const r=dec(location.hash.slice(1));addLib(r);playLib(lib.findIndex(x=>x.code==r.code))}catch(e){}}
+</script></body></html>
