@@ -22,7 +22,7 @@ textarea{width:100%;height:50px;background:var(--panel);color:var(--fg);border:1
 #hint,#pad{color:var(--dim);margin:6px 0 0;font-size:13px}
 [hidden]{display:none!important}
 </style></head><body><div id="app">
-<header><b>Tick Tock Hop</b><small style="color:var(--dim)">v18</small><span id="lbl"></span><span class="sp"></span>
+<header><b>Tick Tock Hop</b><small style="color:var(--dim)">v20</small><span id="lbl"></span><span class="sp"></span>
 <button id="bSn">Sound: on</button><button id="bM">Menu (Esc)</button><button id="bR">Restart (R)</button><button id="bE">Editor (E)</button></header>
 <div id="wrap"><canvas id="c" width="840" height="600" tabindex="0"></canvas>
 <div id="menu"><h1>Tick Tock Hop</h1>
@@ -86,7 +86,7 @@ function jump(rev){const d=near();if(!d)return;const o=pos(P.c,P.r),n=pos(...d);
 function hit(){const a=pos(P.c,P.r),b=tip(a,P.a);
 for(const m of cur.m)if(ps(pos(...m),a,b)<11)return 1;
 for(const o of E){const q=pos(...o.p[o.i]);const t=tip(q,o.a),u=[Math.cos(o.a),Math.sin(o.a)],q2=[q[0]+15*u[0],q[1]+15*u[1]],t2=[t[0]-15*u[0],t[1]-15*u[1]];if(ss([a[0]+15*Math.cos(P.a),a[1]+15*Math.sin(P.a)],[b[0]-12*Math.cos(P.a),b[1]-12*Math.sin(P.a)],q2,t2)<4)return 1}return 0}
-function start(l,t){cur=clone(l);cur.pt=cur.pt||[];score=0;testing=!!t;P={c:cur.s[0],r:cur.s[1],a:0,dir:1};E=cur.e.map(mk);mode="play";ui()}
+function start(l,t){cur=clone(l);cur.ptAll=cur.ptAll||clone(cur.pt||[]);cur.pt=clone(cur.ptAll);score=0;testing=!!t;P={c:cur.s[0],r:cur.s[1],a:0,dir:1};E=cur.e.map(mk);mode="play";ui()}
 function play(i){idx=i;cname="";src="";start(LV[i])}
 function menu(){mode="menu";ui()}
 function back(){testing?(mode="edit",ui()):src=="lib"?openLib():menu()}
