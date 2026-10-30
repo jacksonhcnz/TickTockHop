@@ -6,6 +6,10 @@
 :root{--bg:#f4f1ea;--fg:#1d1d22;--dim:#7a766a;--grid:#d4cfc0;--acc:#0b6bcb;--bad:#d1302a;--good:#1f9d55;--panel:#e9e4d6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161c;--fg:#ecebe4;--dim:#8a8c99;--grid:#2a2c38;--acc:#4da3ff;--bad:#ff5b52;--good:#4ade80;--panel:#20222b}}
 :root[data-theme="dark"]{--bg:#15161c;--fg:#ecebe4;--dim:#8a8c99;--grid:#2a2c38;--acc:#4da3ff;--bad:#ff5b52;--good:#4ade80;--panel:#20222b}
+:root[data-palette="dark"]{--bg:#15161c;--fg:#ecebe4;--dim:#8a8c99;--grid:#2a2c38;--acc:#4da3ff;--bad:#ff5b52;--good:#4ade80;--panel:#20222b}
+:root[data-palette="gulf"]{--bg:#bcdcf2;--fg:#0b2b4a;--dim:#3d6a90;--grid:#9cc8e6;--acc:#f26b1d;--bad:#0b2f66;--good:#ffffff;--panel:#a7cfeb}
+:root[data-palette="martini"]{--bg:#f7f8fa;--fg:#14213d;--dim:#66779a;--grid:#d3e2f3;--acc:#0a6cc4;--bad:#e1062c;--good:#0b2a66;--panel:#e6ecf5}
+:root[data-palette="amber"]{--bg:#26272a;--fg:#ececec;--dim:#9a9a9a;--grid:#44464c;--acc:#ffb300;--bad:#ff6a2a;--good:#c2c2c2;--panel:#34363b}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:15px system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;justify-content:center}
 #app{width:100%;max-width:860px;padding:10px}
@@ -16,18 +20,20 @@ button:hover{border-color:var(--acc)}button.on{background:var(--acc);color:var(-
 #wrap{position:relative}canvas{width:100%;height:auto;display:block;border:1px solid var(--grid);border-radius:8px;outline:none}
 #menu,#lib{position:absolute;inset:0;background:color-mix(in srgb,var(--bg) 92%,transparent);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:16px}
 #menu h1{margin:0;font-size:34px}#lib{overflow:auto;justify-content:flex-start}#lib h2{margin:0}#list{width:100%;max-width:560px;display:flex;flex-direction:column;gap:6px}.it{display:flex;gap:6px;align-items:center;background:var(--panel);border:1px solid var(--grid);border-radius:6px;padding:6px 8px}.it span{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}input{background:var(--panel);color:var(--fg);border:1px solid var(--grid);border-radius:6px;padding:6px 8px;font:inherit}#menu p{margin:0;color:var(--dim);max-width:560px;line-height:1.45}
-#lv{display:grid;grid-template-columns:repeat(10,40px);gap:6px}
+#menu{overflow:auto;justify-content:safe center}#lv{display:grid;grid-template-columns:repeat(10,40px);gap:6px}
 #tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
 textarea{width:100%;height:50px;background:var(--panel);color:var(--fg);border:1px solid var(--grid);border-radius:6px;font:12px monospace;margin-top:6px}
 #hint,#pad{color:var(--dim);margin:6px 0 0;font-size:13px}
 [hidden]{display:none!important}
 </style></head><body><div id="app">
-<header><b>Tick Tock Hop</b><small style="color:var(--dim)">v20</small><span id="lbl"></span><span class="sp"></span>
-<button id="bSn">Sound: on</button><button id="bM">Menu (Esc)</button><button id="bR">Restart (R)</button><button id="bE">Editor (E)</button></header>
+<header><b>Tick Tock Hop</b><small style="color:var(--dim)">v24</small><span id="lbl"></span><span class="sp"></span>
+<select id="pal" title="Colour palette"><option value="default">Palette: Default</option><option value="dark">Palette: Dark</option><option value="gulf">Palette: Gulf</option><option value="martini">Palette: Martini</option><option value="amber">Palette: Amber &amp; Steel</option></select><button id="bSn">Sound: on</button><button id="bM">Menu (Esc)</button><button id="bR">Restart (R)</button><button id="bE">Editor (E)</button></header>
 <div id="wrap"><canvas id="c" width="840" height="600" tabindex="0"></canvas>
 <div id="menu"><h1>Tick Tock Hop</h1>
 <p>Swing the rotating hand from dot to dot and reach the green goal. Avoid enemy hands and mines, and land on blue point dots to score.</p>
-<div id="lv"></div>
+<div><button id="bCamp">Campaign</button></div>
+<div id="cmp" hidden style="display:flex;flex-direction:column;align-items:center;gap:8px"><p>Levels 1 to 20, timed. <b>Regular:</b> if you die, retry the level and the clock keeps running. <b>Hard:</b> if you die, back to level 1 and the clock resets.</p><div><button id="bReg">Regular</button> <button id="bHard">Hard</button></div></div>
+<p style="font-size:13px">Or practise a single level:</p><div id="lv"></div>
 <div><button id="bC">Play custom level</button> <button id="bEd">Level editor</button> <button id="bL">Library &amp; codes</button></div>
 <p>Keyboard: hold <b>A</b> to bounce along · hold <b>S</b> to swing · <b>Space</b> to reverse spin<br>
 Controller: hold <b>LB</b> to bounce along · hold <b>RB</b> to swing · <b>X</b> to reverse spin · <b>Start</b> menu</p></div>
@@ -38,7 +44,7 @@ Controller: hold <b>LB</b> to bounce along · hold <b>RB</b> to swing · <b>X</b
 <select id="dsel"><option value="1">Spin ↻</option><option value="-1">Spin ↺</option></select>
 <button id="bF">Finish enemy (Enter)</button><button id="bT">Test</button><button id="bS">Save</button><input id="nm" placeholder="Level name" maxlength="24"><button id="bS2">Save to library</button><button id="bX">Copy code</button><button id="bI">Import code</button><button id="bK">Clear</button>
 <textarea id="code" placeholder="Level code appears here. Paste a code and press Import code."></textarea></div>
-<p id="hint"></p><p id="pad"></p></div>
+<p id="hint"></p><p id="pad" hidden></p></div>
 <script>
 const L=60,OX=60,OY=60,W=2.6,$=s=>document.querySelector(s),cv=$("#c"),x=cv.getContext("2d");
 const C={};function rc(){const s=getComputedStyle(document.documentElement);["bg","fg","dim","grid","acc","bad","good"].forEach(k=>C[k]=s.getPropertyValue("--"+k).trim())}
@@ -82,25 +88,25 @@ const cr=(a,b,c)=>(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
 function ss(a,b,c,d){if(cr(a,b,c)*cr(a,b,d)<0&&cr(c,d,a)*cr(c,d,b)<0)return 0;return Math.min(ps(a,c,d),ps(b,c,d),ps(c,a,b),ps(d,a,b))}
 const tip=(q,a)=>[q[0]+L*Math.cos(a),q[1]+L*Math.sin(a)];
 function near(){const a=pos(P.c,P.r),t=tip(a,P.a);return cur.dots.find(d=>(d[0]!=P.c||d[1]!=P.r)&&Math.hypot(pos(...d)[0]-t[0],pos(...d)[1]-t[1])<18)}
-function jump(rev){const d=near();if(!d)return;const o=pos(P.c,P.r),n=pos(...d);P.pc=P.c;P.pr=P.r;P.c=d[0];P.r=d[1];const pi=(cur.pt||[]).findIndex(p=>p[0]==d[0]&&p[1]==d[1]);if(pi>=0){cur.pt.splice(pi,1);score++;SFX.pt()}else SFX.jump();P.a=Math.atan2(o[1]-n[1],o[0]-n[0]);if(rev)P.dir*=-1;if(d[0]==cur.g[0]&&d[1]==cur.g[1]){mode="win";SFX.win();if(testing&&tsig)vsig=tsig}}
+function jump(rev){const d=near();if(!d)return;const o=pos(P.c,P.r),n=pos(...d);P.pc=P.c;P.pr=P.r;P.c=d[0];P.r=d[1];const pi=(cur.pt||[]).findIndex(p=>p[0]==d[0]&&p[1]==d[1]);if(pi>=0){cur.pt.splice(pi,1);score++;SFX.pt()}else SFX.jump();P.a=Math.atan2(o[1]-n[1],o[0]-n[0]);if(rev)P.dir*=-1;if(d[0]==cur.g[0]&&d[1]==cur.g[1]){mode="win";SFX.win();if(testing&&tsig)vsig=tsig;campWin()}}
 function hit(){const a=pos(P.c,P.r),b=tip(a,P.a);
 for(const m of cur.m)if(ps(pos(...m),a,b)<11)return 1;
 for(const o of E){const q=pos(...o.p[o.i]);const t=tip(q,o.a),u=[Math.cos(o.a),Math.sin(o.a)],q2=[q[0]+15*u[0],q[1]+15*u[1]],t2=[t[0]-15*u[0],t[1]-15*u[1]];if(ss([a[0]+15*Math.cos(P.a),a[1]+15*Math.sin(P.a)],[b[0]-12*Math.cos(P.a),b[1]-12*Math.sin(P.a)],q2,t2)<4)return 1}return 0}
 function start(l,t){cur=clone(l);cur.ptAll=cur.ptAll||clone(cur.pt||[]);cur.pt=clone(cur.ptAll);score=0;testing=!!t;P={c:cur.s[0],r:cur.s[1],a:0,dir:1};E=cur.e.map(mk);mode="play";ui()}
 function play(i){idx=i;cname="";src="";start(LV[i])}
-function menu(){mode="menu";ui()}
+function menu(){camp=null;mode="menu";ui()}
 function back(){testing?(mode="edit",ui()):src=="lib"?openLib():menu()}
-function next(){if(testing)return back();if(cname)return back();idx<LV.length-1?play(idx+1):menu()}
-function editor(){mode="edit";pe=[];ui()}
-function ui(){$("#menu").hidden=mode!="menu";$("#tools").hidden=mode!="edit";$("#lib").hidden=mode!="lib";
+function next(){if(testing)return back();if(cname)return back();if(camp&&camp.done)return menu();idx<LV.length-1?play(idx+1):menu()}
+function editor(){if(camp)return;mode="edit";pe=[];ui()}
+function ui(){$("#menu").hidden=mode!="menu";if(mode!="menu")$("#cmp").hidden=true;$("#tools").hidden=mode!="edit";$("#lib").hidden=mode!="lib";
 $("#lbl").textContent=mode=="edit"?"Editor":mode=="menu"?"":mode=="lib"?"Library":testing?"Testing":cname||"Level "+(idx+1)+"/"+LV.length;
 $("#hint").textContent=mode=="edit"?"Pick a tool, then click grid points (mines snap to the center of four dots). Enemy path: click adjacent dots, then Finish (Enter or right-click). One point makes a spinner; more makes a patrol.":"";
 document.querySelectorAll("[data-t]").forEach(b=>b.classList.toggle("on",b.dataset.t==tool));cv.focus()}
 function act(k){
 if(mode=="lib"){if(k=="menu")menu();return}
 if(mode=="menu"){if(k=="confirm")play(0);return}
-if(mode=="play"){if(k=="rev"){P.dir*=-1;SFX.rev()}else if(k=="jump")jump(0);else if(k=="jumprev")jump(1);else if(k=="restart")start(cur,testing);else if(k=="menu")back();return}
-if(mode=="dead"){if(k=="confirm"||k=="restart")start(cur,testing);else if(k=="menu")back();return}
+if(mode=="play"){if(k=="rev"){P.dir*=-1;SFX.rev()}else if(k=="jump")jump(0);else if(k=="jumprev")jump(1);else if(k=="restart"){if(!(camp&&camp.mode=="hard"))start(cur,testing)}else if(k=="menu")back();return}
+if(mode=="dead"){if(k=="confirm"||k=="restart")redo();else if(k=="menu")back();return}
 if(mode=="win"){if(k=="confirm")next();else if(k=="menu")back();return}
 if(mode=="edit"){if(k=="confirm")fin();else if(k=="menu")menu()}}
 const KM={" ":"rev",Enter:"confirm",r:"restart",Escape:"menu"};
@@ -109,7 +115,7 @@ if(e.key=="m"||e.key=="M"){tglSnd();return}if(e.key=="e"&&mode!="play"){editor()
 const k=KM[e.key.length==1?e.key.toLowerCase():e.key];if(k){e.preventDefault();if(!e.repeat)act(k)}});
 addEventListener("keydown",e=>{if(!/TEXTAREA|SELECT|INPUT/.test(e.target.tagName)&&/^[aAsS]$/.test(e.key)){e.preventDefault();glideK=/[aA]/.test(e.key)?2:1}});addEventListener("keyup",e=>{if(/^[aAsS]$/.test(e.key))glideK=0});addEventListener("blur",()=>glideK=0);
 const PAD={2:"rev",3:"restart",9:"menu",14:"rev"},gp={};let lastPad="";
-function poll(){const g=(navigator.getGamepads?[...navigator.getGamepads()]:[]).filter(Boolean);glideP=g.some(p=>[5,13].some(i=>p.buttons[i]&&p.buttons[i].pressed))?1:g.some(p=>p.buttons[4]&&p.buttons[4].pressed)?2:0;
+function poll(){let g=[];try{g=(navigator.getGamepads?[...navigator.getGamepads()]:[]).filter(Boolean)}catch(e){}glideP=g.some(p=>[5,13].some(i=>p.buttons[i]&&p.buttons[i].pressed))?1:g.some(p=>p.buttons[4]&&p.buttons[4].pressed)?2:0;
 g.forEach(p=>{const pr=gp[p.index]||(gp[p.index]=[]);p.buttons.forEach((b,i)=>{if(b.pressed&&!pr[i]){let k=PAD[i];if(i==0&&mode!="play"&&mode!="edit")k="confirm";if(k)act(k)}pr[i]=b.pressed})});
 const t=g.length?"Controller connected: "+g[0].id.slice(0,44):"No controller detected. Press a button on it after clicking the game.";if(t!=lastPad){$("#pad").textContent=t;lastPad=t}}
 function fin(){if(pe.length){ed.e.push({p:pe,s:1,d:+$("#dsel").value});pe=[]}}
@@ -124,7 +130,7 @@ cv.addEventListener("mousedown",e=>{cv.focus();if(mode!="edit")return;const b=cv
 if(e.button==2){fin();return}if(tool=="erase"){const mj=ed.m.findIndex(a=>Math.hypot(a[0]-ux,a[1]-uy)<.3);if(mj>=0){ed.m.splice(mj,1);return}}const ing=c>=0&&c<=12&&r>=0&&r<=8;if(tool!="mine"&&!ing)return;if(hc<-.5||hc>12.5||hr<-.5||hr>8.5)return;editAt(c,r,hc,hr)});
 cv.oncontextmenu=e=>e.preventDefault();
 document.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{fin();tool=b.dataset.t;ui()});
-$("#bM").onclick=()=>menu();$("#bR").onclick=()=>{if(cur&&mode!="edit"&&mode!="menu")start(cur,testing)};$("#bE").onclick=editor;$("#bEd").onclick=editor;
+$("#bM").onclick=()=>menu();$("#bR").onclick=()=>{if(cur&&mode!="edit"&&mode!="menu"&&!(camp&&camp.mode=="hard"))start(cur,testing)};$("#bE").onclick=editor;$("#bEd").onclick=editor;
 $("#bC").onclick=()=>{cname="Custom";src="";start(custom||ed)};$("#bF").onclick=()=>{fin()};$("#bK").onclick=()=>{ed={s:[1,4],g:[4,4],dots:[[1,4],[2,4],[3,4],[4,4]],m:[],e:[]};pe=[]};
 $("#bT").onclick=()=>{fin();tsig=enc(ed,"");start(ed,true)};
 $("#bS").onclick=()=>{fin();custom=clone(ed);try{localStorage.setItem("cw_custom",JSON.stringify(custom))}catch(e){}$("#code").value="Saved. Use Menu then Play custom level."};
@@ -142,19 +148,31 @@ const has=(c,r)=>lv.dots.some(d=>d[0]==c&&d[1]==r);
 x.strokeStyle=C.grid;x.lineWidth=3;x.beginPath();x.stroke();
 lv.m.forEach(m=>mine(pos(...m)));
 const nd=mode!="edit"&&P?near():null;
-lv.dots.forEach(d=>{const q=pos(...d),g=d[0]==lv.g[0]&&d[1]==lv.g[1],s=d[0]==lv.s[0]&&d[1]==lv.s[1],isp=(lv.pt||[]).some(p=>p[0]==d[0]&&p[1]==d[1]);if(isp){const rad=22+3*Math.sin(performance.now()/350),gr=x.createRadialGradient(q[0],q[1],3,q[0],q[1],rad);gr.addColorStop(0,C.acc);gr.addColorStop(1,"rgba(77,163,255,0)");x.globalAlpha=.6;x.fillStyle=gr;x.beginPath();x.arc(q[0],q[1],rad,0,7);x.fill();x.globalAlpha=1}x.beginPath();x.arc(q[0],q[1],g?12:isp?9:7,0,7);x.fillStyle=g?C.good:isp?C.acc:C.bg;x.fill();x.lineWidth=2.5;x.strokeStyle=g?C.good:isp?C.acc:s?C.acc:C.fg;x.stroke();if(g){x.beginPath();x.arc(q[0],q[1],17,0,7);x.stroke()}
+lv.dots.forEach(d=>{const q=pos(...d),g=d[0]==lv.g[0]&&d[1]==lv.g[1],s=d[0]==lv.s[0]&&d[1]==lv.s[1],isp=(lv.pt||[]).some(p=>p[0]==d[0]&&p[1]==d[1]);if(isp){const rad=22+3*Math.sin(performance.now()/350),gr=x.createRadialGradient(q[0],q[1],3,q[0],q[1],rad);gr.addColorStop(0,C.acc);gr.addColorStop(1,a0(C.acc));x.globalAlpha=.6;x.fillStyle=gr;x.beginPath();x.arc(q[0],q[1],rad,0,7);x.fill();x.globalAlpha=1}x.beginPath();x.arc(q[0],q[1],g?12:isp?9:7,0,7);x.fillStyle=g?C.good:isp?C.acc:C.bg;x.fill();x.lineWidth=2.5;x.strokeStyle=g?C.good:isp?C.acc:s?C.acc:C.fg;x.stroke();if(g){x.beginPath();x.arc(q[0],q[1],17,0,7);x.stroke()}
 });
 if(mode=="edit"){x.font="12px system-ui";x.textAlign="center";x.fillStyle=C.acc;const s=pos(...lv.s);x.fillText("START",s[0],s[1]-14);const vv=enc(ed,"")==vsig;x.textAlign="left";x.font="bold 14px system-ui,sans-serif";x.fillStyle=vv?C.good:C.dim;x.fillText(vv?"Tested: you can copy the code":"Not tested yet: beat it in Test to unlock Copy code",16,24);x.textAlign="center";
 lv.e.forEach(e=>{x.strokeStyle=C.bad;x.setLineDash([6,5]);x.lineWidth=2;x.beginPath();e.p.forEach((p,i)=>i?x.lineTo(...pos(...p)):x.moveTo(...pos(...p)));x.stroke();x.setLineDash([]);const q=pos(...e.p[0]);hand(q,e.p.length>1?ang(q,pos(...e.p[1])):0,C.bad,5)});
 if(pe.length){x.strokeStyle=C.acc;x.setLineDash([3,4]);x.beginPath();pe.forEach((p,i)=>i?x.lineTo(...pos(...p)):x.moveTo(...pos(...p)));x.stroke();x.setLineDash([]);pe.forEach(p=>{x.beginPath();x.arc(...pos(...p),6,0,7);x.stroke()})}return}
 E.forEach(o=>hand(pos(...o.p[o.i]),o.a,C.bad,5));
-hand(pos(P.c,P.r),P.a,C.acc,6);const tp=score+cur.pt.length;if(tp){x.fillStyle=C.acc;x.font="bold 16px system-ui,sans-serif";x.textAlign="left";x.fillText("Points "+score+" / "+tp,16,28)}
-if(mode=="dead")msg("Zapped!","Enter / A to retry · Esc for menu",C.bad);
-if(mode=="win")msg("Level clear!",testing?"Verified! You can now copy its code. Enter / A returns to the editor":"Enter / A to continue",C.good)}
+hand(pos(P.c,P.r),P.a,C.acc,6);const tp=score+cur.pt.length;if(tp){x.fillStyle=C.acc;x.font="bold 16px system-ui,sans-serif";x.textAlign="left";x.fillText("Points "+score+" / "+tp,16,28)}if(camp){x.fillStyle=C.fg;x.font="bold 16px system-ui,sans-serif";x.textAlign="right";x.fillText((camp.mode=="hard"?"HARD   ":"")+fmt(campMs()),824,28)}
+if(mode=="dead")msg("Zapped!",camp&&camp.mode=="hard"?"Hard mode: back to level 1 and the clock resets. Enter / A to continue":"Enter / A to retry · Esc for menu",C.bad);
+if(mode=="win"&&camp&&camp.done)summary();else if(mode=="win")msg("Level clear!",testing?"Verified! You can now copy its code. Enter / A returns to the editor":"Enter / A to continue",C.good)}
 let lt=performance.now();
 function loop(n){const dt=Math.min(.05,(n-lt)/1000);lt=n;poll();
 if(mode=="play"){if(P.pc!==undefined){const a=pos(P.c,P.r),t=tip(a,P.a),q=pos(P.pc,P.pr);if(Math.hypot(t[0]-q[0],t[1]-q[1])>30)P.pc=P.pr=undefined}const gl=glideK||glideP;if(gl){const d=near();if(d&&!(d[0]==P.pc&&d[1]==P.pr))jump(gl==1)}P.a+=P.dir*W*dt;E.forEach(o=>updE(o,dt));if(mode=="play"&&hit()){mode="dead";SFX.dead()}}
 draw();requestAnimationFrame(loop)}
+function a0(h){h=String(h).trim();if(h[0]!="#"||h.length!=7)return "rgba(0,0,0,0)";const n=parseInt(h.slice(1),16);return "rgba("+(n>>16)+","+(n>>8&255)+","+(n&255)+",0)"}
+const PALS=["default","dark","gulf","martini","amber"];
+function setPal(v){if(!PALS.includes(v))v="default";if(v=="default")document.documentElement.removeAttribute("data-palette");else document.documentElement.setAttribute("data-palette",v);$("#pal").value=v;rc();try{localStorage.setItem("cw_pal",v)}catch(e){}}
+$("#pal").onchange=e=>{setPal(e.target.value);e.target.blur();cv.focus()};
+try{setPal(localStorage.getItem("cw_pal")||"default")}catch(e){}
+let camp=null;
+const fmt=ms=>{const s=Math.floor(ms/100)/10,m=Math.floor(s/60);return m+":"+(s-m*60).toFixed(1).padStart(4,"0")},campMs=()=>camp.done?camp.final:performance.now()-camp.t0;
+function startCamp(m){camp={mode:m,t0:performance.now(),pts:0,done:false,final:0};play(0)}
+function redo(){if(camp&&camp.mode=="hard"){camp.t0=performance.now();camp.pts=0;play(0)}else start(cur,testing)}
+function campWin(){if(!camp)return;camp.pts+=score;if(idx>=LV.length-1){camp.done=true;camp.final=performance.now()-camp.t0}}
+function summary(){const all=LV.reduce((a,l)=>a+(l.pt||[]).length,0);x.fillStyle=C.bg;x.globalAlpha=.94;x.fillRect(120,150,600,300);x.globalAlpha=1;x.strokeStyle=C.good;x.lineWidth=3;x.strokeRect(120,150,600,300);x.textAlign="center";x.fillStyle=C.good;x.font="bold 36px system-ui,sans-serif";x.fillText("Campaign complete!",420,212);x.fillStyle=C.dim;x.font="18px system-ui,sans-serif";x.fillText((camp.mode=="hard"?"Hard":"Regular")+" mode",420,244);x.fillStyle=C.fg;x.font="bold 26px system-ui,sans-serif";x.fillText("Points: "+camp.pts+" / "+all,420,308);x.fillText("Total time: "+fmt(camp.final),420,352);x.fillStyle=C.dim;x.font="16px system-ui,sans-serif";x.fillText("Enter / A to return to the menu",420,418)}
+$("#bCamp").onclick=()=>{$("#cmp").hidden=!$("#cmp").hidden};$("#bReg").onclick=()=>startCamp("regular");$("#bHard").onclick=()=>startCamp("hard");
 let AC=null,snd=true;
 function beep(f,d,t,v,f2){if(!snd)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state=="suspended")AC.resume();const o=AC.createOscillator(),g=AC.createGain(),n=AC.currentTime;o.type=t||"square";o.frequency.setValueAtTime(f,n);if(f2)o.frequency.exponentialRampToValueAtTime(f2,n+d);g.gain.setValueAtTime(v||.08,n);g.gain.exponentialRampToValueAtTime(.0001,n+d);o.connect(g);g.connect(AC.destination);o.start(n);o.stop(n+d)}catch(e){}}
 const SFX={jump:()=>beep(520,.08,"square",.05,780),rev:()=>beep(300,.05,"triangle",.07),pt:()=>{beep(660,.09,"sine",.09);setTimeout(()=>beep(990,.14,"sine",.09),80)},dead:()=>beep(320,.5,"sawtooth",.08,50),win:()=>[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.16,"square",.06),i*110))};
