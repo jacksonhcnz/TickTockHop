@@ -38,46 +38,6 @@
   --good: #4ade80;
   --panel: #20222b;
 }
-:root[data-palette="dark"] {
-  --bg: #15161c;
-  --fg: #ecebe4;
-  --dim: #8a8c99;
-  --grid: #2a2c38;
-  --acc: #4da3ff;
-  --bad: #ff5b52;
-  --good: #4ade80;
-  --panel: #20222b;
-}
-:root[data-palette="gulf"] {
-  --bg: #bcdcf2;
-  --fg: #0b2b4a;
-  --dim: #3d6a90;
-  --grid: #9cc8e6;
-  --acc: #f26b1d;
-  --bad: #0b2f66;
-  --good: #ffffff;
-  --panel: #a7cfeb;
-}
-:root[data-palette="martini"] {
-  --bg: #f7f8fa;
-  --fg: #14213d;
-  --dim: #66779a;
-  --grid: #d3e2f3;
-  --acc: #0a6cc4;
-  --bad: #e1062c;
-  --good: #0b2a66;
-  --panel: #e6ecf5;
-}
-:root[data-palette="amber"] {
-  --bg: #26272a;
-  --fg: #ececec;
-  --dim: #9a9a9a;
-  --grid: #44464c;
-  --acc: #ffb300;
-  --bad: #ff6a2a;
-  --good: #c2c2c2;
-  --panel: #34363b;
-}
 * {
   box-sizing: border-box;
 }
@@ -238,8 +198,8 @@ textarea {
   display: none !important;
 }
 </style></head><body><div id="app">
-<header><b>Tick Tock Hop</b><small style="color:var(--dim)">v25</small><span id="lbl"></span><span class="sp"></span>
-<select id="pal" title="Colour palette"><option value="default">Palette: Default</option><option value="dark">Palette: Dark</option><option value="gulf">Palette: Gulf</option><option value="martini">Palette: Martini</option><option value="amber">Palette: Amber &amp; Steel</option></select><button id="bSn">Sound: on</button><button id="bM">Menu (Esc)</button><button id="bR">Restart (R)</button><button id="bE">Editor (E)</button></header>
+<header><b>Tick Tock Hop</b><small style="color:var(--dim)">v26</small><span id="lbl"></span><span class="sp"></span>
+<button id="bSn">Sound: on</button><button id="bM">Menu (Esc)</button><button id="bR">Restart (R)</button><button id="bE">Editor (E)</button></header>
 <div id="wrap"><canvas id="c" width="840" height="600" tabindex="0"></canvas>
 <div id="menu"><h1>Tick Tock Hop</h1>
 <p>Swing the rotating hand from dot to dot and reach the green goal. Avoid enemy hands and mines, and land on blue point dots to score.</p>
@@ -291,7 +251,7 @@ const ctx = canvas.getContext("2d");
 // Current colours, copied from the CSS variables by readColors().
 const colors = {};
 
-// Copies the CSS colour variables so palettes and dark mode also apply to the canvas.
+// Copies the CSS colour variables so light and dark mode also apply to the canvas.
 function readColors() {
   const s = getComputedStyle(document.documentElement);
   ["bg", "fg", "dim", "grid", "acc", "bad", "good"].forEach(
@@ -2836,7 +2796,7 @@ function gameLoop(n) {
 }
 
 // ============================================================
-// COLOUR PALETTES
+// COLOUR HELPERS
 // ============================================================
 
 // Turns a #rrggbb colour into a fully transparent rgba() colour (used for the point-dot glow).
@@ -2849,32 +2809,9 @@ function transparentColor(h) {
   return "rgba(" + (n >> 16) + "," + ((n >> 8) & 255) + "," + (n & 255) + ",0)";
 }
 
-// Names of the available colour palettes.
-const PALETTES = ["default", "dark", "gulf", "martini", "amber"];
-
-// Applies a palette by setting data-palette on <html>, and remembers the choice.
-function setPalette(v) {
-  if (!PALETTES.includes(v)) {
-    v = "default";
-  }
-  if (v == "default") {
-    document.documentElement.removeAttribute("data-palette");
-  } else {
-    document.documentElement.setAttribute("data-palette", v);
-  }
-  qs("#pal").value = v;
-  readColors();
-  try {
-    localStorage.setItem("cw_pal", v);
-  } catch (e) {}
-}
-qs("#pal").onchange = (e) => {
-  setPalette(e.target.value);
-  e.target.blur();
-  canvas.focus();
-};
+// Forget a palette chosen in an older version (the colour palettes were removed).
 try {
-  setPalette(localStorage.getItem("cw_pal") || "default");
+  localStorage.removeItem("cw_pal");
 } catch (e) {}
 
 // ============================================================
