@@ -238,20 +238,20 @@ textarea {
   display: none !important;
 }
 </style></head><body><div id="app">
-<header><b>Tick Tock Hop</b><small style="color:var(--dim)">v24</small><span id="lbl"></span><span class="sp"></span>
+<header><b>Tick Tock Hop</b><small style="color:var(--dim)">v25</small><span id="lbl"></span><span class="sp"></span>
 <select id="pal" title="Colour palette"><option value="default">Palette: Default</option><option value="dark">Palette: Dark</option><option value="gulf">Palette: Gulf</option><option value="martini">Palette: Martini</option><option value="amber">Palette: Amber &amp; Steel</option></select><button id="bSn">Sound: on</button><button id="bM">Menu (Esc)</button><button id="bR">Restart (R)</button><button id="bE">Editor (E)</button></header>
 <div id="wrap"><canvas id="c" width="840" height="600" tabindex="0"></canvas>
 <div id="menu"><h1>Tick Tock Hop</h1>
 <p>Swing the rotating hand from dot to dot and reach the green goal. Avoid enemy hands and mines, and land on blue point dots to score.</p>
 <div><button id="bCamp">Campaign</button></div>
 <div id="cmp" hidden style="display:flex;flex-direction:column;align-items:center;gap:8px"><p>Levels 1 to 20, timed. <b>Regular:</b> if you die, retry the level and the clock keeps running. <b>Hard:</b> if you die, back to level 1 and the clock resets.</p><div><button id="bReg">Regular</button> <button id="bHard">Hard</button></div></div>
-<p style="font-size:13px">Or practise a single level:</p><div id="lv"></div>
+<p style="font-size:13px">Or practise a single level (21 to 28 introduce the new objects):</p><div id="lv"></div>
 <div><button id="bC">Play custom level</button> <button id="bEd">Level editor</button> <button id="bL">Library &amp; codes</button></div>
 <p>Keyboard: hold <b>A</b> to bounce along · hold <b>S</b> to swing · <b>Space</b> to reverse spin<br>
 Controller: hold <b>LB</b> to bounce along · hold <b>RB</b> to swing · <b>X</b> to reverse spin · <b>Start</b> menu</p></div>
 <div id="lib" hidden><h2>Level library</h2><p>Paste a level code (starts with CW1-) or a share link to add it. Levels you save from the editor appear here too.</p><textarea id="imp" placeholder="CW1-..."></textarea><div><button id="bImp">Import level</button> <button id="bBack">Back</button></div><div id="msg" style="min-height:18px"></div><div id="list"></div></div></div>
 <div id="tools" hidden>
-<button data-t="dot">Dot</button><button data-t="start">Start</button><button data-t="goal">Goal</button><button data-t="mine">Mine</button><button data-t="point">Point dot</button><button data-t="enemy">Enemy path</button><button data-t="erase">Erase</button>
+<button data-t="dot">Dot</button><button data-t="start">Start</button><button data-t="goal">Goal</button><button data-t="mine">Mine</button><button data-t="point">Point dot</button><button data-t="item">Place item</button><select id="itemType"><option value="wall|0">Wall (click square centres)</option><option value="door|0">Door, starts closed</option><option value="door|1">Door, starts open</option><option value="switch|0">Switch</option><option value="trigger|0">Trigger</option><option value="gun|1">Gun: right</option><option value="gun|2">Gun: down</option><option value="gun|4">Gun: left</option><option value="gun|8">Gun: up</option><option value="gun|15">Gun: all four</option><option value="spike|1">Orbiting spike (clockwise)</option><option value="spike|-1">Orbiting spike (anticlockwise)</option><option value="bomb|0">Bomb, then lighter</option><option value="buster|0">Wallbuster</option><option value="oil|0">Oil glob, then dot</option><option value="hourglass|0">Hourglass dot</option><option value="ring|0">Ring dot</option><option value="slow|0">Slowdown dot</option><option value="station|0">Way station dot</option><option value="death|0">Death dot</option><option value="shield|0">Shield dot</option><option value="updown|0">Up/down dot, starts up</option><option value="updown|1">Up/down dot, starts down</option><option value="hyper|0">Hyperdots (click two dots)</option></select><select id="itemColor"><option value="0">Colour 1</option><option value="1">Colour 2</option><option value="2">Colour 3</option></select><button data-t="enemy">Enemy path</button><button data-t="erase">Erase</button>
 
 <select id="dsel"><option value="1">Spin ↻</option><option value="-1">Spin ↺</option></select>
 <button id="bF">Finish enemy (Enter)</button><button id="bT">Test</button><button id="bS">Save</button><input id="nm" placeholder="Level name" maxlength="24"><button id="bS2">Save to library</button><button id="bX">Copy code</button><button id="bI">Import code</button><button id="bK">Clear</button>
@@ -318,6 +318,7 @@ function expandLevel(l) {
     m: l.m || [],
     e: l.e || [],
     pt: l.p || [],
+    it: l.i || [],
   };
 }
 
@@ -905,6 +906,108 @@ const LEVELS = [
       [6, 7],
     ],
   },
+  // Level 21: Walls
+  {
+    s: [1, 4],
+    g: [11, 4],
+    d: [[1, 4, 11, 4]],
+    i: [
+      { t: "wall", p: [3.5, 3.5], q: [4.5, 3.5] },
+      { t: "wall", p: [4.5, 3.5], q: [5.5, 3.5] },
+      { t: "wall", p: [5.5, 3.5], q: [6.5, 3.5] },
+      { t: "wall", p: [8.5, 4.5], q: [9.5, 4.5] },
+      { t: "wall", p: [9.5, 4.5], q: [10.5, 4.5] },
+      { t: "wall", p: [10.5, 4.5], q: [11.5, 4.5] },
+    ],
+    p: [[5, 4], [9, 4]],
+  },
+  // Level 22: Doors
+  {
+    s: [1, 4],
+    g: [11, 4],
+    d: [[1, 4, 11, 4], [3, 2, 3, 4]],
+    i: [
+      { t: "door", p: [7.5, 3.5], q: [7.5, 4.5], k: 0, o: 0 },
+      { t: "switch", p: [2.5, 1.5], k: 0 },
+    ],
+    p: [[3, 3], [9, 4]],
+  },
+  // Level 23: Guns
+  {
+    s: [1, 4],
+    g: [11, 4],
+    d: [[1, 4, 11, 4], [6, 6, 6, 6]],
+    e: [{ p: [[6, 6]], d: 1 }],
+    i: [
+      { t: "gun", p: [4, 1], k: 0, m: 2 },
+      { t: "gun", p: [8, 7], k: 0, m: 8 },
+      { t: "trigger", p: [6.5, 5.5], k: 0 },
+    ],
+    p: [[3, 4], [9, 4]],
+  },
+  // Level 24: Special dots
+  {
+    s: [1, 4],
+    g: [11, 6],
+    d: [[1, 4, 10, 4], [8, 3, 8, 3], [10, 6, 11, 6]],
+    e: [{ p: [[8, 3]], d: 1 }],
+    i: [
+      { t: "station", p: [3, 4] },
+      { t: "hourglass", p: [4, 4] },
+      { t: "death", p: [5, 4] },
+      { t: "ring", p: [7, 4] },
+      { t: "shield", p: [8, 4] },
+      { t: "slow", p: [9, 4] },
+      { t: "hyper", p: [10, 4], q: [10, 6] },
+    ],
+    p: [[4, 4], [6, 4]],
+  },
+  // Level 25: Up and down
+  {
+    s: [1, 4],
+    g: [11, 4],
+    d: [[1, 4, 11, 4], [3, 2, 3, 4]],
+    i: [
+      { t: "updown", p: [6, 4], k: 1, o: 1 },
+      { t: "switch", p: [2.5, 1.5], k: 1 },
+    ],
+    p: [[3, 3], [9, 4]],
+  },
+  // Level 26: Spikes and oil
+  {
+    s: [1, 4],
+    g: [11, 4],
+    d: [[1, 4, 11, 4], [5, 3, 5, 3]],
+    i: [
+      { t: "spike", p: [5, 3], d: 1 },
+      { t: "oil", p: [6.5, 3.5], q: [7, 4] },
+    ],
+    p: [[3, 4], [9, 4]],
+  },
+  // Level 27: Bomb
+  {
+    s: [1, 4],
+    g: [11, 4],
+    d: [[1, 4, 11, 4]],
+    i: [
+      { t: "wall", p: [7.5, 2.5], q: [7.5, 3.5] },
+      { t: "wall", p: [7.5, 3.5], q: [7.5, 4.5] },
+      { t: "wall", p: [7.5, 4.5], q: [7.5, 5.5] },
+      { t: "bomb", p: [6.5, 3.5], q: [2.5, 3.5] },
+    ],
+    p: [[3, 4], [10, 4]],
+  },
+  // Level 28: Wallbuster
+  {
+    s: [1, 2],
+    g: [6, 6],
+    d: [[1, 2, 5, 2], [5, 2, 5, 5], [5, 5, 6, 5], [6, 5, 6, 6]],
+    i: [
+      { t: "wall", p: [5.5, 5.5], q: [6.5, 5.5] },
+      { t: "buster", p: [6, 2] },
+    ],
+    p: [[3, 2], [5, 4]],
+  },
 ].map(expandLevel);
 [
   [
@@ -1111,28 +1214,43 @@ function jump(reverse) {
   if (!target) {
     return;
   }
+  const here = flagAt(player.c, player.r);
+  const there = flagAt(target[0], target[1]);
+  if (there.ud && there.ud.down) {
+    return; // a dot that is down cannot be grabbed
+  }
+  if (here.death && there.death) {
+    return; // you cannot go straight from one death dot to another
+  }
   const oldPivot = gridToPixel(player.c, player.r);
   const newPivot = gridToPixel(...target);
+  const left = [player.c, player.r];
   player.pc = player.c;
   player.pr = player.r;
   player.c = target[0];
   player.r = target[1];
-  const pointIndex = (currentLevel.pt || []).findIndex(
-    (p) => p[0] == target[0] && p[1] == target[1],
-  );
-  if (pointIndex >= 0) {
-    currentLevel.pt.splice(pointIndex, 1);
-    score++;
-    SOUNDS.pt();
-  } else {
-    SOUNDS.jump();
-  }
+  let gotPoint = collectPoint(player.c, player.r);
   // The hand now points back at the dot it just left.
   player.a = Math.atan2(oldPivot[1] - newPivot[1], oldPivot[0] - newPivot[0]);
   if (reverse) {
     player.dir *= -1;
   }
-  if (target[0] == currentLevel.g[0] && target[1] == currentLevel.g[1]) {
+  if (there.hy) {
+    // Hyperdot: instantly moved to its twin, keeping the same angle and spin.
+    player.c = there.hy[0];
+    player.r = there.hy[1];
+    gotPoint = collectPoint(player.c, player.r) || gotPoint;
+  }
+  if (!gotPoint) {
+    SOUNDS.jump();
+  }
+  if (here.ring) {
+    removeDot(left);
+  }
+  if (flagAt(player.c, player.r).station) {
+    checkpoint = { c: player.c, r: player.r, pt: deepClone(currentLevel.pt), score: score };
+  }
+  if (player.c == currentLevel.g[0] && player.r == currentLevel.g[1]) {
     gameMode = "win";
     SOUNDS.win();
     if (isTesting && testSignature) {
@@ -1147,11 +1265,28 @@ function jump(reverse) {
 function playerIsHit() {
   const pivot = gridToPixel(player.c, player.r);
   const tipPoint = handTip(pivot, player.a);
+  if (world.killPlayer) {
+    return 1; // a bomb blast or a white bomb spark got the player
+  }
   // Mines: a hit if the player's hand passes within 11 px of a mine centre.
   for (const m of currentLevel.m) {
     if (pointToSegmentDistance(gridToPixel(...m), pivot, tipPoint) < 11) {
       return 1;
     }
+  }
+  // Orbiting spikes, bullets and oil droplets.
+  if (world.spikes.some((sp) => pointToSegmentDistance(spikePos(sp), pivot, tipPoint) < 10)) {
+    return 1;
+  }
+  if (world.bullets.some((b) => pointToSegmentDistance([b.x, b.y], pivot, tipPoint) < 8)) {
+    return 1;
+  }
+  if (world.drops.some((d) => d.c == player.c && d.r == player.r)) {
+    return 1;
+  }
+  // A shield dot protects against enemy hands (but nothing else).
+  if (flagAt(player.c, player.r).shield) {
+    return 0;
   }
   // Enemies: only the middle of each hand counts. 15 px is trimmed from both ends of the enemy hand and from the
   // base of the player's hand, and 12 px from the player's tip. A hit is when the trimmed hands come within 4 px.
@@ -1179,20 +1314,834 @@ function playerIsHit() {
 // GAME FLOW: starting levels, menus and actions
 // ============================================================
 
-// Starts (or restarts) a level from a level definition.
-function startLevel(l, t) {
-  currentLevel = deepClone(l);
-  currentLevel.ptAll = currentLevel.ptAll || deepClone(currentLevel.pt || []);
-  currentLevel.pt = deepClone(currentLevel.ptAll);
+// ============================================================
+// OBSTACLES AND SPECIAL OBJECTS
+// ============================================================
+
+// Objects live in level.it. Each one is { t: type, p, q, k, o, m, d }:
+//   p, q  positions. "half" = the centre of four dots (such as 2.5, 3.5), "int" = a grid point, "dot" = a dot.
+//   k     colour 0-2: links switches to doors and up/down dots, and triggers to guns.
+//   o     1 when a door starts open, or an up/down dot starts down.
+//   m     gun barrels: 1 right, 2 down, 4 left, 8 up (added together).
+//   d     spin direction of an orbiting spike.
+const KEY_COLORS = ["#d98c00", "#9b4dca", "#00979d"];
+const BULLET_SPEED = 180; // pixels per second
+const FUSE_TIME = 2.4; // seconds from lighting a bomb to the explosion
+const BLAST_RADIUS = 90; // pixels
+const CAMPAIGN_LEVELS = 20; // the campaign covers the first 20 levels; later levels are practice levels
+
+// What each object needs: a number code for level codes, the kind of each position, and its extra fields.
+const ITEM_SCHEMA = {
+  wall: { code: 1, pts: ["half", "half"], ex: [] },
+  door: { code: 2, pts: ["half", "half"], ex: ["k", "o"] },
+  switch: { code: 3, pts: ["half"], ex: ["k"] },
+  trigger: { code: 4, pts: ["half"], ex: ["k"] },
+  gun: { code: 5, pts: ["int"], ex: ["k", "m"] },
+  spike: { code: 6, pts: ["dot"], ex: ["d"] },
+  bomb: { code: 7, pts: ["half", "half"], ex: [] },
+  buster: { code: 8, pts: ["int"], ex: [] },
+  oil: { code: 9, pts: ["half", "dot"], ex: [] },
+  ring: { code: 10, pts: ["dot"], ex: [] },
+  slow: { code: 11, pts: ["dot"], ex: [] },
+  station: { code: 12, pts: ["dot"], ex: [] },
+  death: { code: 13, pts: ["dot"], ex: [] },
+  shield: { code: 14, pts: ["dot"], ex: [] },
+  hourglass: { code: 15, pts: ["dot"], ex: [] },
+  updown: { code: 16, pts: ["dot"], ex: ["k", "o"] },
+  hyper: { code: 17, pts: ["dot", "dot"], ex: [] },
+};
+
+// Runtime state of the objects on the current level (see buildWorld).
+let world = null;
+// Pristine copy of the level being played, used for retries.
+let baseLevel = null;
+// Way-station checkpoint { c, r, pt, score }, or null.
+let checkpoint = null;
+
+const dotKey = (c, r) => c + "," + r;
+const samePoint = (a, b) => !!a && !!b && a[0] == b[0] && a[1] == b[1];
+// Special flags of a dot (ring, slow, station, death, shield, hourglass, ud, hy), or an empty object.
+const flagAt = (c, r) => (world && world.flags[dotKey(c, r)]) || {};
+// True when segment a-b properly crosses segment c-d.
+const crosses = (a, b, c, d) => cross(a, b, c) * cross(a, b, d) < 0 && cross(c, d, a) * cross(c, d, b) < 0;
+
+// Builds the runtime state for a level's objects.
+function buildWorld(level) {
+  const w = {
+    walls: [],
+    doors: [],
+    pads: [],
+    guns: [],
+    bullets: [],
+    spikes: [],
+    bombs: [],
+    busters: [],
+    globs: [],
+    drops: [],
+    blasts: [],
+    flags: {},
+    killPlayer: false,
+  };
+  const flag = (p) => (w.flags[dotKey(p[0], p[1])] = w.flags[dotKey(p[0], p[1])] || {});
+  for (const it of level.it || []) {
+    if (it.t == "wall") {
+      w.walls.push({ a: it.p, b: it.q });
+    } else if (it.t == "door") {
+      w.doors.push({ a: it.p, b: it.q, k: it.k, open: it.o, goal: it.o });
+    } else if (it.t == "switch" || it.t == "trigger") {
+      w.pads.push({ kind: it.t, p: it.p, k: it.k, on: false });
+    } else if (it.t == "gun") {
+      w.guns.push({ p: it.p, k: it.k, m: it.m });
+    } else if (it.t == "spike") {
+      w.spikes.push({ c: it.p[0], r: it.p[1], d: it.d, a: 0 });
+    } else if (it.t == "bomb") {
+      w.bombs.push({ p: it.p, l: it.q, state: 0, t: 0, on: false });
+    } else if (it.t == "buster") {
+      w.busters.push({ p: [...it.p], v: null });
+    } else if (it.t == "oil") {
+      w.globs.push({ p: [...it.p], q: it.q, creeping: false });
+    } else if (it.t == "hyper") {
+      flag(it.p).hy = it.q;
+      flag(it.q).hy = it.p;
+    } else if (it.t == "updown") {
+      flag(it.p).ud = { k: it.k, down: it.o };
+    } else {
+      flag(it.p)[it.t] = 1; // ring, slow, station, death, shield, hourglass
+    }
+  }
+  return w;
+}
+
+// Pixel position of an orbiting spike (it orbits a dot at the middle of a hand's length).
+function spikePos(s) {
+  const p = gridToPixel(s.c, s.r);
+  return [p[0] + (CELL / 2) * Math.cos(s.a), p[1] + (CELL / 2) * Math.sin(s.a)];
+}
+
+// Walls and closed doors as [pixelA, pixelB, object] triples.
+function solidSegments() {
+  const list = world.walls.map((w) => [gridToPixel(...w.a), gridToPixel(...w.b), w]);
+  for (const d of world.doors) {
+    if (d.open < 0.5) {
+      list.push([gridToPixel(...d.a), gridToPixel(...d.b), d]);
+    }
+  }
+  return list;
+}
+
+// True if a hand pivoting at pivot, pointing at angle, would cross a wall or closed door.
+function handBlocked(pivot, angle) {
+  const tipPoint = handTip(pivot, angle);
+  return solidSegments().some(([p, q]) => crosses(pivot, tipPoint, p, q));
+}
+
+// Turns the player's hand. When it runs into a wall or door it bounces: the spin direction reverses.
+function rotatePlayer(dt) {
+  const pivot = gridToPixel(player.c, player.r);
+  const before = player.a;
+  const wasBlocked = handBlocked(pivot, before);
+  player.a += player.dir * SPIN_SPEED * dt;
+  if (!wasBlocked && handBlocked(pivot, player.a)) {
+    player.a = before;
+    player.dir *= -1;
+    SOUNDS.rev();
+  }
+}
+
+// Pivot and tip (in pixels) of the player's hand (first) and every enemy hand.
+function handSegments() {
+  const mine = gridToPixel(player.c, player.r);
+  const list = [{ pivot: mine, tip: handTip(mine, player.a) }];
+  for (const e of enemies) {
+    const pv = gridToPixel(...e.p[e.i]);
+    list.push({ pivot: pv, tip: handTip(pv, e.a) });
+  }
+  return list;
+}
+
+// A switch was pressed: doors of that colour change direction and up/down dots of that colour flip.
+function pressSwitch(k) {
+  SOUNDS.rev();
+  for (const d of world.doors) {
+    if (d.k == k) {
+      d.goal = d.goal ? 0 : 1;
+    }
+  }
+  for (const f of Object.values(world.flags)) {
+    if (f.ud && f.ud.k == k) {
+      f.ud.down ^= 1;
+    }
+  }
+}
+
+// A trigger was passed: every gun of that colour fires a bullet from each of its barrels.
+function fireGuns(k) {
+  for (const g of world.guns) {
+    if (g.k != k) {
+      continue;
+    }
+    const at = gridToPixel(...g.p);
+    [
+      [1, 1, 0],
+      [2, 0, 1],
+      [4, -1, 0],
+      [8, 0, -1],
+    ].forEach(([bit, dx, dy]) => {
+      if (g.m & bit) {
+        world.bullets.push({ x: at[0], y: at[1], vx: dx * BULLET_SPEED, vy: dy * BULLET_SPEED });
+      }
+    });
+  }
+}
+
+// A bomb goes off: kills hands in range and destroys nearby objects and bonus dots.
+function explode(b) {
+  b.state = 2;
+  SOUNDS.boom();
+  const c = gridToPixel(...b.p);
+  world.blasts.push({ x: c[0], y: c[1], t: 0 });
+  const near = (pt) => Math.hypot(pt[0] - c[0], pt[1] - c[1]) < BLAST_RADIUS;
+  const me = handSegments()[0];
+  if (pointToSegmentDistance(c, me.pivot, me.tip) < BLAST_RADIUS) {
+    world.killPlayer = true;
+  }
+  enemies = enemies.filter((e) => {
+    const pv = gridToPixel(...e.p[e.i]);
+    return pointToSegmentDistance(c, pv, handTip(pv, e.a)) >= BLAST_RADIUS;
+  });
+  const mid = (o) => gridToPixel((o.a[0] + o.b[0]) / 2, (o.a[1] + o.b[1]) / 2);
+  currentLevel.m = currentLevel.m.filter((m) => !near(gridToPixel(...m)));
+  currentLevel.pt = currentLevel.pt.filter((p) => !near(gridToPixel(...p)));
+  world.spikes = world.spikes.filter((s) => !near(spikePos(s)));
+  world.walls = world.walls.filter((w) => !near(mid(w)));
+  world.doors = world.doors.filter((d) => !near(mid(d)));
+  world.pads = world.pads.filter((p) => !near(gridToPixel(...p.p)));
+  world.globs = world.globs.filter((g) => !near(gridToPixel(...g.p)));
+  world.drops = world.drops.filter((d) => !near(gridToPixel(d.c, d.r)));
+}
+
+// An oil droplet drips one dot closer to the player's dot.
+function dripToward(drop) {
+  let best = null;
+  let bestDistance = Math.abs(drop.c - player.c) + Math.abs(drop.r - player.r);
+  for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+    const nc = drop.c + dc;
+    const nr = drop.r + dr;
+    if (!currentLevel.dots.some((d) => d[0] == nc && d[1] == nr)) {
+      continue;
+    }
+    const distance = Math.abs(nc - player.c) + Math.abs(nr - player.r);
+    if (distance < bestDistance) {
+      best = [nc, nr];
+      bestDistance = distance;
+    }
+  }
+  if (best) {
+    drop.c = best[0];
+    drop.r = best[1];
+  }
+}
+
+// Moves everything that is not a hand: switches, doors, spikes, bullets, wallbusters, bombs and oil.
+function updateWorld(dt) {
+  const hands = handSegments();
+  // Is a point touched by any hand (or only the player's)?
+  const touching = (pt, playerOnly) =>
+    hands.some((h, i) => (!playerOnly || i == 0) && pointToSegmentDistance(pt, h.pivot, h.tip) < 12);
+
+  // Switches and triggers react when any hand passes over them.
+  for (const pad of world.pads) {
+    const now = touching(gridToPixel(...pad.p), false);
+    if (now && !pad.on) {
+      if (pad.kind == "switch") {
+        pressSwitch(pad.k);
+      } else {
+        fireGuns(pad.k);
+      }
+    }
+    pad.on = now;
+  }
+
+  // Doors slide open or shut.
+  const step = dt / 0.6;
+  for (const d of world.doors) {
+    d.open += Math.max(-step, Math.min(step, d.goal - d.open));
+  }
+
+  for (const s of world.spikes) {
+    s.a += s.d * SPIN_SPEED * dt;
+  }
+
+  const solid = solidSegments();
+
+  // Bullets stop at walls and closed doors.
+  world.bullets = world.bullets.filter((b) => {
+    const from = [b.x, b.y];
+    b.x += b.vx * dt;
+    b.y += b.vy * dt;
+    if (b.x < 0 || b.x > 840 || b.y < 0 || b.y > 600) {
+      return false;
+    }
+    return !solid.some(([p, q]) => crosses(from, [b.x, b.y], p, q));
+  });
+
+  // Wallbusters float until the player's hand whacks them. They destroy the first wall they hit and bounce off doors.
+  world.busters = world.busters.filter((b) => {
+    const here = gridToPixel(...b.p);
+    if (!b.v) {
+      if (touching(here, true)) {
+        const tx = -Math.sin(player.a) * player.dir;
+        const ty = Math.cos(player.a) * player.dir;
+        b.v = Math.abs(tx) > Math.abs(ty) ? [Math.sign(tx), 0] : [0, Math.sign(ty)];
+      }
+      return true;
+    }
+    const to = [b.p[0] + b.v[0] * 3 * dt, b.p[1] + b.v[1] * 3 * dt];
+    const path = gridToPixel(...to);
+    b.p = to;
+    for (const [p, q, obj] of solid) {
+      if (!crosses(here, path, p, q)) {
+        continue;
+      }
+      if (world.doors.includes(obj)) {
+        b.v = [-b.v[0], -b.v[1]];
+        return true;
+      }
+      world.walls = world.walls.filter((w) => w !== obj);
+      return false;
+    }
+    if (to[0] < -1 || to[0] > 13) {
+      b.v[0] = -b.v[0];
+    }
+    if (to[1] < -1 || to[1] > 9) {
+      b.v[1] = -b.v[1];
+    }
+    return true;
+  });
+
+  // Bombs: the player passing the lighter starts a fuse. The spark is harmless while red and deadly once white.
+  for (const b of world.bombs) {
+    if (b.state == 0) {
+      const now = touching(gridToPixel(...b.l), true);
+      if (now && !b.on) {
+        b.state = 1;
+        b.t = 0;
+      }
+      b.on = now;
+    } else if (b.state == 1) {
+      b.t += dt;
+      const f = Math.min(1, b.t / FUSE_TIME);
+      const l = gridToPixel(...b.l);
+      const bp = gridToPixel(...b.p);
+      b.spark = [l[0] + (bp[0] - l[0]) * f, l[1] + (bp[1] - l[1]) * f];
+      if (b.t > 0.9 && pointToSegmentDistance(b.spark, hands[0].pivot, hands[0].tip) < 9) {
+        world.killPlayer = true;
+      }
+      if (b.t >= FUSE_TIME) {
+        explode(b);
+      }
+    }
+  }
+  world.blasts.forEach((b) => (b.t += dt));
+  world.blasts = world.blasts.filter((b) => b.t < 0.6);
+
+  // Oil: a glob the player passes creeps to its dot and becomes a droplet, which then chases the player.
+  for (const g of [...world.globs]) {
+    if (!g.creeping && touching(gridToPixel(...g.p), true)) {
+      g.creeping = true;
+    }
+    if (g.creeping) {
+      const target = gridToPixel(...g.q);
+      const here = gridToPixel(...g.p);
+      const dx = target[0] - here[0];
+      const dy = target[1] - here[1];
+      const distance = Math.hypot(dx, dy);
+      const move = 20 * dt;
+      if (distance <= move) {
+        world.drops.push({ c: g.q[0], r: g.q[1], wait: 2.5 });
+        world.globs = world.globs.filter((x) => x !== g);
+      } else {
+        g.p = [g.p[0] + (dx / distance) * (move / CELL), g.p[1] + (dy / distance) * (move / CELL)];
+      }
+    }
+  }
+  for (const d of world.drops) {
+    d.wait -= dt;
+    if (d.wait <= 0) {
+      dripToward(d);
+      d.wait = 1.2;
+    }
+  }
+}
+
+// Collects the point dot at (c, r), if there is one. An hourglass also gives 10 seconds off the campaign clock.
+function collectPoint(c, r) {
+  const i = currentLevel.pt.findIndex((p) => p[0] == c && p[1] == r);
+  if (i < 0) {
+    return false;
+  }
+  currentLevel.pt.splice(i, 1);
+  score++;
+  SOUNDS.pt();
+  if (flagAt(c, r).hourglass && campaign && !campaign.done) {
+    campaign.t0 = Math.min(performance.now(), campaign.t0 + 10000);
+  }
+  return true;
+}
+
+// Removes a dot (a ring dot disappears once it is released). Enemies standing on it vanish too.
+function removeDot(d) {
+  currentLevel.dots = currentLevel.dots.filter((x) => !samePoint(x, d));
+  enemies = enemies.filter((e) => !samePoint(e.p[e.i], d));
+}
+
+// Draws every object of a world on top of the dots.
+function drawWorld(w, lvl) {
+  const seg = (a, b, color, width) => {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(...a);
+    ctx.lineTo(...b);
+    ctx.stroke();
+  };
+  const disc = (p, r, color) => {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(p[0], p[1], r, 0, 7);
+    ctx.fill();
+  };
+  for (const s of w.spikes) {
+    const c = gridToPixel(s.c, s.r);
+    ctx.strokeStyle = colors.grid;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 4]);
+    ctx.beginPath();
+    ctx.arc(c[0], c[1], CELL / 2, 0, 7);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    drawMine(spikePos(s));
+  }
+  for (const wl of w.walls) {
+    seg(gridToPixel(...wl.a), gridToPixel(...wl.b), colors.fg, 6);
+  }
+  for (const d of w.doors) {
+    const a = gridToPixel(...d.a);
+    const b = gridToPixel(...d.b);
+    const len = 1 - d.open;
+    if (len > 0.03) {
+      seg(a, [a[0] + (b[0] - a[0]) * len, a[1] + (b[1] - a[1]) * len], KEY_COLORS[d.k], 6);
+    }
+    disc(a, 5, KEY_COLORS[d.k]);
+    disc(b, 5, KEY_COLORS[d.k]);
+  }
+  for (const pad of w.pads) {
+    const p = gridToPixel(...pad.p);
+    ctx.fillStyle = KEY_COLORS[pad.k];
+    ctx.strokeStyle = colors.fg;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    if (pad.kind == "switch") {
+      ctx.rect(p[0] - 6, p[1] - 6, 12, 12);
+    } else {
+      ctx.moveTo(p[0], p[1] - 8);
+      ctx.lineTo(p[0] + 8, p[1]);
+      ctx.lineTo(p[0], p[1] + 8);
+      ctx.lineTo(p[0] - 8, p[1]);
+      ctx.closePath();
+    }
+    ctx.fill();
+    ctx.stroke();
+  }
+  for (const g of w.guns) {
+    const p = gridToPixel(...g.p);
+    [
+      [1, 1, 0],
+      [2, 0, 1],
+      [4, -1, 0],
+      [8, 0, -1],
+    ].forEach(([bit, dx, dy]) => {
+      if (g.m & bit) {
+        seg(p, [p[0] + dx * 14, p[1] + dy * 14], KEY_COLORS[g.k], 5);
+      }
+    });
+    disc(p, 7, KEY_COLORS[g.k]);
+    ctx.strokeStyle = colors.fg;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+  for (const b of w.bullets) {
+    disc([b.x, b.y], 4, colors.bad);
+  }
+  for (const b of w.bombs) {
+    const bp = gridToPixel(...b.p);
+    const lp = gridToPixel(...b.l);
+    ctx.setLineDash([3, 4]);
+    seg(lp, bp, colors.dim, 2);
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#e8590c";
+    ctx.fillRect(lp[0] - 6, lp[1] - 4, 12, 8);
+    if (b.state != 2) {
+      disc(bp, 11, colors.fg);
+      seg([bp[0] + 6, bp[1] - 9], [bp[0] + 11, bp[1] - 15], colors.bad, 3);
+    }
+    if (b.state == 1 && b.spark) {
+      disc(b.spark, 5, b.t > 0.9 ? "#ffffff" : colors.bad);
+      ctx.strokeStyle = colors.fg;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+  }
+  for (const b of w.busters) {
+    const p = gridToPixel(...b.p);
+    ctx.fillStyle = colors.dim;
+    ctx.strokeStyle = colors.fg;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(p[0], p[1] - 9);
+    ctx.lineTo(p[0] + 9, p[1]);
+    ctx.lineTo(p[0], p[1] + 9);
+    ctx.lineTo(p[0] - 9, p[1]);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+  for (const g of w.globs) {
+    const p = gridToPixel(...g.p);
+    ctx.fillStyle = "#6b3e14";
+    ctx.beginPath();
+    ctx.ellipse(p[0], p[1], 10, 7, 0, 0, 7);
+    ctx.fill();
+  }
+  for (const d of w.drops) {
+    const p = gridToPixel(d.c, d.r);
+    disc(p, 8, "#6b3e14");
+    ctx.beginPath();
+    ctx.moveTo(p[0] - 6, p[1] - 3);
+    ctx.lineTo(p[0], p[1] - 14);
+    ctx.lineTo(p[0] + 6, p[1] - 3);
+    ctx.fill();
+  }
+  for (const bl of w.blasts) {
+    ctx.globalAlpha = Math.max(0, 1 - bl.t / 0.6) * 0.8;
+    disc([bl.x, bl.y], BLAST_RADIUS * Math.min(1, bl.t / 0.4), colors.bad);
+    ctx.globalAlpha = 1;
+  }
+
+  // Icons on special dots.
+  for (const d of lvl.dots) {
+    const f = w.flags[dotKey(d[0], d[1])];
+    if (!f) {
+      continue;
+    }
+    const [x0, y0] = gridToPixel(...d);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = colors.fg;
+    ctx.fillStyle = colors.fg;
+    if (f.ring) {
+      ctx.beginPath();
+      ctx.arc(x0, y0, 12, 0, 7);
+      ctx.stroke();
+    }
+    if (f.slow) {
+      ctx.beginPath();
+      ctx.moveTo(x0 - 4, y0 - 3);
+      ctx.lineTo(x0 + 4, y0 - 3);
+      ctx.lineTo(x0, y0 + 4);
+      ctx.closePath();
+      ctx.fill();
+    }
+    if (f.station) {
+      ctx.beginPath();
+      ctx.moveTo(x0 - 4, y0);
+      ctx.lineTo(x0 + 4, y0);
+      ctx.moveTo(x0, y0 - 4);
+      ctx.lineTo(x0, y0 + 4);
+      ctx.stroke();
+    }
+    if (f.death) {
+      ctx.fillRect(x0 - 3, y0 - 3, 6, 6);
+    }
+    if (f.shield) {
+      ctx.strokeStyle = "#00979d";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(x0, y0, 13, 0, 7);
+      ctx.stroke();
+    }
+    if (f.hourglass && (lvl.pt || []).some((p) => samePoint(p, d))) {
+      ctx.fillStyle = "#e0a800";
+      ctx.strokeStyle = colors.fg;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x0 - 5, y0 - 7);
+      ctx.lineTo(x0 + 5, y0 - 7);
+      ctx.lineTo(x0, y0);
+      ctx.lineTo(x0 + 5, y0 + 7);
+      ctx.lineTo(x0 - 5, y0 + 7);
+      ctx.lineTo(x0, y0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    }
+    if (f.ud) {
+      ctx.strokeStyle = KEY_COLORS[f.ud.k];
+      ctx.lineWidth = 3;
+      ctx.globalAlpha = f.ud.down ? 0.5 : 1;
+      ctx.setLineDash(f.ud.down ? [3, 3] : []);
+      ctx.beginPath();
+      ctx.arc(x0, y0, 13, 0, 7);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+    }
+    if (f.hy) {
+      const id = Math.min(d[0] + 13 * d[1], f.hy[0] + 13 * f.hy[1]);
+      ctx.strokeStyle = KEY_COLORS[id % 3];
+      ctx.fillStyle = KEY_COLORS[id % 3];
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(x0, y0, 13, 0, 7);
+      ctx.stroke();
+      ctx.font = "bold 10px system-ui,sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("H", x0, y0 + 4);
+    }
+  }
+}
+
+// ---- Level editor support for objects ----
+
+// First click of a two-click object (wall, door, bomb, oil, hyperdots), or null.
+let pendingItem = null;
+// Special dot types that cannot share a dot with each other.
+const ITEM_DOT_GROUP = ["ring", "slow", "station", "death", "shield", "updown"];
+
+// True if an object is attached to the dot (c, r).
+function itemUsesDot(it, c, r) {
+  return ITEM_SCHEMA[it.t].pts.some((kind, i) => kind == "dot" && samePoint(i ? it.q : it.p, [c, r]));
+}
+
+// Editor: places the object chosen in the list at the clicked point.
+function placeItem(c, r, hc, hr) {
+  const spec = qs("#itemType").value.split("|");
+  const t = spec[0];
+  const v = +spec[1];
+  const k = +qs("#itemColor").value;
+  const kinds = ITEM_SCHEMA[t].pts;
+  const items = (editorLevel.it = editorLevel.it || []);
+  const kind = kinds[pendingItem ? 1 : 0];
+  const here = kind == "half" ? [hc, hr] : [c, r];
+  if (kind == "dot" && !editorLevel.dots.some((d) => samePoint(d, here))) {
+    return;
+  }
+  if (kind == "int" && !(c >= 0 && c <= 12 && r >= 0 && r <= 8)) {
+    return;
+  }
+  const make = (p, q) => {
+    const it = { t, p };
+    if (q) {
+      it.q = q;
+    }
+    if (ITEM_SCHEMA[t].ex.includes("k")) {
+      it.k = k;
+    }
+    if (t == "door" || t == "updown") {
+      it.o = v;
+    }
+    if (t == "gun") {
+      it.m = v;
+    }
+    if (t == "spike") {
+      it.d = v;
+    }
+    return it;
+  };
+  if (kinds.length == 1) {
+    // One click: place it, or remove it if it is already there.
+    const same = items.findIndex((it) => it.t == t && samePoint(it.p, here));
+    if (same >= 0) {
+      items.splice(same, 1);
+      return;
+    }
+    if (ITEM_DOT_GROUP.includes(t)) {
+      const other = items.findIndex((it) => ITEM_DOT_GROUP.includes(it.t) && samePoint(it.p, here));
+      if (other >= 0) {
+        items.splice(other, 1);
+      }
+    }
+    items.push(make(here));
+    if (t == "hourglass") {
+      editorLevel.pt = editorLevel.pt || [];
+      if (!editorLevel.pt.some((p) => samePoint(p, here))) {
+        editorLevel.pt.push(here);
+      }
+    }
+    return;
+  }
+  // Two clicks.
+  if (!pendingItem) {
+    pendingItem = { first: here };
+    return;
+  }
+  const first = pendingItem.first;
+  if (samePoint(first, here)) {
+    pendingItem = null;
+    return;
+  }
+  if (t == "wall" || t == "door") {
+    if (Math.abs(first[0] - here[0]) + Math.abs(first[1] - here[1]) == 1) {
+      items.push(make(first, here));
+    }
+    pendingItem = { first: here }; // keep chaining the next segment from here
+    return;
+  }
+  if (t == "oil" && Math.hypot(first[0] - here[0], first[1] - here[1]) >= 1) {
+    return;
+  }
+  items.push(make(first, here));
+  pendingItem = null;
+}
+
+// Editor: removes the object nearest to a click (in grid units), if one is close enough.
+function eraseItemAt(ux, uy) {
+  const items = editorLevel.it || [];
+  let best = -1;
+  let bestDistance = 0.35;
+  items.forEach((it, i) => {
+    const pts =
+      it.t == "wall" || it.t == "door"
+        ? [[(it.p[0] + it.q[0]) / 2, (it.p[1] + it.q[1]) / 2]]
+        : [it.p, it.q].filter(Boolean);
+    for (const p of pts) {
+      const d = Math.hypot(p[0] - ux, p[1] - uy);
+      if (d < bestDistance) {
+        bestDistance = d;
+        best = i;
+      }
+    }
+  });
+  if (best < 0) {
+    return false;
+  }
+  items.splice(best, 1);
+  return true;
+}
+
+// ---- Level codes for objects ----
+
+// An object as a list of whole numbers for a level code (positions are doubled so square centres stay whole).
+function encodeItem(it) {
+  const s = ITEM_SCHEMA[it.t];
+  const out = [s.code];
+  [it.p, it.q].slice(0, s.pts.length).forEach((p) => out.push(p[0] * 2, p[1] * 2));
+  s.ex.forEach((name) => out.push(name == "d" ? (it.d > 0 ? 1 : 0) : it[name]));
+  return out;
+}
+
+// Validates and decodes the objects of a level code. dotIds is the set of dot ids in the level.
+function decodeItems(list, dotIds) {
+  const bad = "An object in this code is invalid.";
+  if (!Array.isArray(list) || list.length > 200) {
+    throw bad;
+  }
+  return list.map((a) => {
+    if (!Array.isArray(a) || !a.every(Number.isInteger)) {
+      throw bad;
+    }
+    const type = Object.keys(ITEM_SCHEMA).find((t) => ITEM_SCHEMA[t].code == a[0]);
+    if (!type) {
+      throw bad;
+    }
+    const s = ITEM_SCHEMA[type];
+    if (a.length != 1 + s.pts.length * 2 + s.ex.length) {
+      throw bad;
+    }
+    const it = { t: type };
+    s.pts.forEach((kind, i) => {
+      const x = a[1 + 2 * i] / 2;
+      const y = a[2 + 2 * i] / 2;
+      const whole = Number.isInteger(x) && Number.isInteger(y);
+      const half = !Number.isInteger(x) && !Number.isInteger(y);
+      if (x < -0.5 || x > 12.5 || y < -0.5 || y > 8.5) {
+        throw bad;
+      }
+      if (kind == "half" ? !half : !whole) {
+        throw bad;
+      }
+      if (kind == "dot" && !dotIds.has(pointToId([x, y]))) {
+        throw bad;
+      }
+      it[i ? "q" : "p"] = [x, y];
+    });
+    s.ex.forEach((name, j) => {
+      const v = a[1 + 2 * s.pts.length + j];
+      if (name == "d") {
+        it.d = v == 1 ? 1 : -1;
+      } else if (name == "k" && v >= 0 && v <= 2) {
+        it.k = v;
+      } else if (name == "o" && (v == 0 || v == 1)) {
+        it.o = v;
+      } else if (name == "m" && v >= 1 && v <= 15) {
+        it.m = v;
+      } else {
+        throw bad;
+      }
+    });
+    if ((type == "wall" || type == "door") && Math.abs(it.p[0] - it.q[0]) + Math.abs(it.p[1] - it.q[1]) != 1) {
+      throw bad;
+    }
+    if ((type == "bomb" || type == "hyper") && samePoint(it.p, it.q)) {
+      throw bad;
+    }
+    if (type == "oil" && Math.hypot(it.p[0] - it.q[0], it.p[1] - it.q[1]) >= 1) {
+      throw bad;
+    }
+    return it;
+  });
+}
+
+// Restarts the current level after a death or Restart, keeping any way-station checkpoint.
+function retryLevel() {
+  startLevel(baseLevel, isTesting, true);
+}
+
+qs("#itemType").onchange = () => {
+  pendingItem = null;
+};
+
+// Starts (or restarts) a level from a level definition. When retry is true the level is restarted from the
+// pristine copy (and from the way-station checkpoint if one was reached).
+function startLevel(l, t, retry) {
+  if (!retry) {
+    baseLevel = deepClone(l);
+    baseLevel.it = baseLevel.it || [];
+    baseLevel.pt = baseLevel.pt || [];
+    // An hourglass is also a point dot.
+    for (const it of baseLevel.it) {
+      if (it.t == "hourglass" && !baseLevel.pt.some((p) => samePoint(p, it.p))) {
+        baseLevel.pt.push([...it.p]);
+      }
+    }
+    checkpoint = null;
+  }
+  currentLevel = deepClone(baseLevel);
   score = 0;
+  const from = retry && checkpoint ? checkpoint : null;
+  if (from) {
+    currentLevel.pt = deepClone(from.pt);
+    score = from.score;
+  }
   isTesting = !!t;
   player = {
-    c: currentLevel.s[0],
-    r: currentLevel.s[1],
+    c: from ? from.c : currentLevel.s[0],
+    r: from ? from.r : currentLevel.s[1],
     a: 0,
     dir: 1,
   };
   enemies = currentLevel.e.map(makeEnemy);
+  world = buildWorld(currentLevel);
   gameMode = "play";
   updateUI();
 }
@@ -1261,7 +2210,7 @@ function updateUI() {
             : customLevelName || "Level " + (levelIndex + 1) + "/" + LEVELS.length;
   qs("#hint").textContent =
     gameMode == "edit"
-      ? "Pick a tool, then click grid points (mines snap to the center of four dots). Enemy path: click adjacent dots, then Finish (Enter or right-click). One point makes a spinner; more makes a patrol."
+      ? "Pick a tool, then click grid points (mines snap to the center of four dots). Enemy path: click adjacent dots, then Finish (Enter or right-click). One point makes a spinner; more makes a patrol. Place item: pick an object in the list; walls, doors, bombs, oil and hyperdots take two clicks."
       : "";
   document
     .querySelectorAll("[data-t]")
@@ -1293,7 +2242,7 @@ function handleAction(k) {
       jump(1);
     } else if (k == "restart") {
       if (!(campaign && campaign.mode == "hard")) {
-        startLevel(currentLevel, isTesting);
+        retryLevel();
       }
     } else if (k == "menu") {
       goBack();
@@ -1434,6 +2383,7 @@ function finishEnemyPath() {
     });
     pendingEnemyPath = [];
   }
+  pendingItem = null;
 }
 
 // Editor: applies the selected tool at the clicked point. (hc, hr) is the nearest square centre, used for mines.
@@ -1448,6 +2398,7 @@ function editAtPoint(c, r, hc, hr) {
         editorLevel.dots.splice(di, 1);
         editorLevel.pt = (editorLevel.pt || []).filter((p) => !k(p));
         editorLevel.e = editorLevel.e.filter((e) => !e.p.some(k));
+        editorLevel.it = (editorLevel.it || []).filter((it) => !itemUsesDot(it, c, r));
       }
     } else {
       editorLevel.dots.push([c, r]);
@@ -1475,6 +2426,8 @@ function editAtPoint(c, r, hc, hr) {
       const pi = editorLevel.pt.findIndex(k);
       pi >= 0 ? editorLevel.pt.splice(pi, 1) : editorLevel.pt.push([c, r]);
     }
+  } else if (editorTool == "item") {
+    placeItem(c, r, hc, hr);
   } else if (editorTool == "mine") {
     const mj = editorLevel.m.findIndex((a) => a[0] == hc && a[1] == hr);
     if (mj >= 0) {
@@ -1491,6 +2444,7 @@ function editAtPoint(c, r, hc, hr) {
     if (di >= 0 && !sg) {
       editorLevel.dots.splice(di, 1);
       editorLevel.pt = (editorLevel.pt || []).filter((p) => !k(p));
+      editorLevel.it = (editorLevel.it || []).filter((it) => !itemUsesDot(it, c, r));
     }
     if (mi >= 0) {
       editorLevel.m.splice(mi, 1);
@@ -1516,6 +2470,9 @@ canvas.addEventListener("mousedown", (e) => {
     return;
   }
   if (editorTool == "erase") {
+    if (eraseItemAt(ux, uy)) {
+      return;
+    }
     const mj = editorLevel.m.findIndex((a) => Math.hypot(a[0] - ux, a[1] - uy) < 0.3);
     if (mj >= 0) {
       editorLevel.m.splice(mj, 1);
@@ -1523,7 +2480,7 @@ canvas.addEventListener("mousedown", (e) => {
     }
   }
   const ing = c >= 0 && c <= 12 && r >= 0 && r <= 8;
-  if (editorTool != "mine" && !ing) {
+  if (editorTool != "mine" && editorTool != "item" && !ing) {
     return;
   }
   if (hc < -0.5 || hc > 12.5 || hr < -0.5 || hr > 8.5) {
@@ -1548,7 +2505,7 @@ qs("#bR").onclick = () => {
     gameMode != "menu" &&
     !(campaign && campaign.mode == "hard")
   ) {
-    startLevel(currentLevel, isTesting);
+    retryLevel();
   }
 };
 qs("#bE").onclick = openEditor;
@@ -1741,6 +2698,7 @@ function draw() {
       ctx.stroke();
     }
   });
+  drawWorld(gameMode == "edit" ? buildWorld(editorLevel) : world, lv);
   if (gameMode == "edit") {
     ctx.font = "12px system-ui";
     ctx.textAlign = "center";
@@ -1784,6 +2742,13 @@ function draw() {
         ctx.arc(...gridToPixel(...p), 6, 0, 7);
         ctx.stroke();
       });
+    }
+    if (pendingItem) {
+      ctx.strokeStyle = colors.acc;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(...gridToPixel(...pendingItem.first), 9, 0, 7);
+      ctx.stroke();
     }
     return;
   }
@@ -1856,8 +2821,11 @@ function gameLoop(n) {
         jump(gl == 1);
       }
     }
-    player.a += player.dir * SPIN_SPEED * dt;
-    enemies.forEach((o) => updateEnemy(o, dt));
+    rotatePlayer(dt);
+    // While the player is on a slowdown dot, enemy hands move at half speed.
+    const slowdown = flagAt(player.c, player.r).slow ? 0.5 : 1;
+    enemies.forEach((o) => updateEnemy(o, dt * slowdown));
+    updateWorld(dt);
     if (gameMode == "play" && playerIsHit()) {
       gameMode = "dead";
       SOUNDS.dead();
@@ -1946,7 +2914,7 @@ function retryAfterDeath() {
     campaign.pts = 0;
     playBuiltInLevel(0);
   } else {
-    startLevel(currentLevel, isTesting);
+    retryLevel();
   }
 }
 
@@ -1956,7 +2924,7 @@ function recordCampaignWin() {
     return;
   }
   campaign.pts += score;
-  if (levelIndex >= LEVELS.length - 1) {
+  if (levelIndex >= CAMPAIGN_LEVELS - 1) {
     campaign.done = true;
     campaign.final = performance.now() - campaign.t0;
   }
@@ -1964,7 +2932,7 @@ function recordCampaignWin() {
 
 // Draws the end-of-campaign summary with total points and total time.
 function drawCampaignSummary() {
-  const all = LEVELS.reduce((a, l) => a + (l.pt || []).length, 0);
+  const all = LEVELS.slice(0, CAMPAIGN_LEVELS).reduce((a, l) => a + (l.pt || []).length, 0);
   ctx.fillStyle = colors.bg;
   ctx.globalAlpha = 0.94;
   ctx.fillRect(120, 150, 600, 300);
@@ -2032,6 +3000,7 @@ function playTone(f, d, t, v, f2) {
 
 // The game sound effects.
 const SOUNDS = {
+  boom: () => playTone(130, 0.5, "sawtooth", 0.1, 35),
   jump: () => playTone(520, 0.08, "square", 0.05, 780),
   rev: () => playTone(300, 0.05, "triangle", 0.07),
   pt: () => {
@@ -2100,8 +3069,9 @@ const idToPoint = (i) => [i % 13, Math.floor(i / 13)];
 
 // Turns a level into a shareable "CW1-..." code.
 function encodeLevel(l, n) {
+  const items = (l.it || []).map(encodeItem);
   return (
-    "CW1-" +
+    (items.length ? "CW2-" : "CW1-") +
     toBase64Url(
       JSON.stringify({
         n: (n || "Untitled").slice(0, 24),
@@ -2114,6 +3084,7 @@ function encodeLevel(l, n) {
           d: e.d,
         })),
         p: (l.pt || []).map(pointToId),
+        ...(items.length ? { i: items } : {}),
       }),
     )
   );
@@ -2126,8 +3097,8 @@ function decodeLevel(code) {
   if (h >= 0) {
     code = code.slice(h + 1);
   }
-  if (!code.startsWith("CW1-")) {
-    throw "That is not a level code. Codes start with CW1-";
+  if (!code.startsWith("CW1-") && !code.startsWith("CW2-")) {
+    throw "That is not a level code. Codes start with CW1- or CW2-";
   }
   let o;
   try {
@@ -2187,6 +3158,7 @@ function decodeLevel(code) {
         d: q.d == -1 ? -1 : 1,
       })),
       pt: pt.map(idToPoint),
+      it: o.i ? decodeItems(o.i, D) : [],
     },
   };
 }
