@@ -198,14 +198,14 @@ textarea {
   display: none !important;
 }
 </style></head><body><div id="app">
-<header><b>Tick Tock Hop</b><small style="color:var(--dim)">v26</small><span id="lbl"></span><span class="sp"></span>
+<header><b>Tick Tock Hop</b><small style="color:var(--dim)">v27</small><span id="lbl"></span><span class="sp"></span>
 <button id="bSn">Sound: on</button><button id="bM">Menu (Esc)</button><button id="bR">Restart (R)</button><button id="bE">Editor (E)</button></header>
 <div id="wrap"><canvas id="c" width="840" height="600" tabindex="0"></canvas>
 <div id="menu"><h1>Tick Tock Hop</h1>
 <p>Swing the rotating hand from dot to dot and reach the green goal. Avoid enemy hands and mines, and land on blue point dots to score.</p>
-<div><button id="bCamp">Campaign</button></div>
-<div id="cmp" hidden style="display:flex;flex-direction:column;align-items:center;gap:8px"><p>Levels 1 to 20, timed. <b>Regular:</b> if you die, retry the level and the clock keeps running. <b>Hard:</b> if you die, back to level 1 and the clock resets.</p><div><button id="bReg">Regular</button> <button id="bHard">Hard</button></div></div>
-<p style="font-size:13px">Or practise a single level (21 to 28 introduce the new objects):</p><div id="lv"></div>
+<div><button id="bCamp">Campaign</button> <button id="bCamp2">Campaign 2</button></div>
+<div id="cmp" hidden style="display:flex;flex-direction:column;align-items:center;gap:8px"><p id="cmpText"></p><div><button id="bReg">Regular</button> <button id="bHard">Hard</button></div></div>
+<p style="font-size:13px">Or practise a single level (21 to 28 introduce the new objects, 29 to 42 are Campaign 2):</p><div id="lv"></div>
 <div><button id="bC">Play custom level</button> <button id="bEd">Level editor</button> <button id="bL">Library &amp; codes</button></div>
 <p>Keyboard: hold <b>A</b> to bounce along · hold <b>S</b> to swing · <b>Space</b> to reverse spin<br>
 Controller: hold <b>LB</b> to bounce along · hold <b>RB</b> to swing · <b>X</b> to reverse spin · <b>Start</b> menu</p></div>
@@ -279,6 +279,7 @@ function expandLevel(l) {
     e: l.e || [],
     pt: l.p || [],
     it: l.i || [],
+    name: l.n,
   };
 }
 
@@ -968,6 +969,394 @@ const LEVELS = [
     ],
     p: [[3, 2], [5, 4]],
   },
+  // Campaign 2: Movement
+  {
+    n: "Movement",
+    s: [2, 1],
+    g: [11, 5],
+    d: [[1, 1, 8, 1], [8, 2, 9, 2], [9, 3, 10, 3], [1, 4, 7, 4], [10, 4, 11, 4], [7, 5, 11, 5], [1, 6, 6, 6], [11, 6, 11, 6], [7, 7, 11, 7]],
+    e: [{ p: [[1, 4], [2, 4], [3, 4], [4, 4], [5, 4], [6, 4]] }, { p: [[1, 6], [2, 6], [3, 6], [4, 6], [5, 6], [6, 6]] }, { p: [[9, 7]], d: 1 }],
+    p: [[10, 3], [8, 7], [10, 7]],
+  },
+  // Campaign 2: Spikes
+  {
+    n: "Spikes",
+    s: [2, 1],
+    g: [9, 5],
+    d: [[2, 1, 10, 1], [2, 2, 10, 2], [2, 3, 10, 3], [2, 4, 10, 4], [2, 5, 10, 5], [2, 6, 10, 6]],
+    m: [[9.5, 1.5], [6.5, 2.5], [6.5, 3.5], [10.5, 4], [10.5, 4.5], [10.5, 5], [7.5, 5.5], [3, 6.5], [3.5, 6.5], [4, 6.5]],
+    e: [{ p: [[6, 3]], d: 1 }, { p: [[6, 4]], d: -1 }],
+    p: [[9, 1], [10, 1], [9, 2], [10, 2], [7, 5], [8, 5], [7, 6], [8, 6]],
+  },
+  // Campaign 2: Walls
+  {
+    n: "Walls",
+    s: [1, 3],
+    g: [10, 6],
+    d: [[1, 1, 3, 1], [7, 1, 11, 1], [1, 2, 3, 2], [7, 2, 11, 2], [1, 3, 11, 3], [1, 4, 11, 4], [1, 5, 5, 5], [8, 5, 11, 5], [1, 6, 11, 6], [1, 7, 11, 7]],
+    m: [[9.5, 1.5]],
+    e: [{ p: [[7, 6]], d: 1 }],
+    i: [
+      { t: "wall", p: [1.5, 0.5], q: [2.5, 0.5] },
+      { t: "wall", p: [2.5, 0.5], q: [3.5, 0.5] },
+      { t: "wall", p: [3.5, 0.5], q: [4.5, 0.5] },
+      { t: "wall", p: [4.5, 0.5], q: [5.5, 0.5] },
+      { t: "wall", p: [5.5, 0.5], q: [6.5, 0.5] },
+      { t: "wall", p: [6.5, 0.5], q: [7.5, 0.5] },
+      { t: "wall", p: [7.5, 0.5], q: [8.5, 0.5] },
+      { t: "wall", p: [8.5, 0.5], q: [9.5, 0.5] },
+      { t: "wall", p: [9.5, 0.5], q: [10.5, 0.5] },
+      { t: "wall", p: [3.5, 0.5], q: [3.5, 1.5] },
+      { t: "wall", p: [3.5, 1.5], q: [3.5, 2.5] },
+      { t: "wall", p: [3.5, 2.5], q: [3.5, 3.5] },
+      { t: "wall", p: [6.5, 0.5], q: [6.5, 1.5] },
+      { t: "wall", p: [6.5, 1.5], q: [6.5, 2.5] },
+      { t: "wall", p: [5.5, 4.5], q: [6.5, 4.5] },
+      { t: "wall", p: [6.5, 4.5], q: [7.5, 4.5] },
+      { t: "wall", p: [7.5, 4.5], q: [8.5, 4.5] },
+      { t: "wall", p: [10.5, 4.5], q: [11.5, 4.5] },
+      { t: "wall", p: [5.5, 4.5], q: [5.5, 5.5] },
+      { t: "wall", p: [5.5, 5.5], q: [5.5, 6.5] },
+      { t: "wall", p: [7.5, 4.5], q: [7.5, 5.5] },
+      { t: "wall", p: [5.5, 5.5], q: [6.5, 5.5] },
+      { t: "wall", p: [6.5, 5.5], q: [7.5, 5.5] },
+      { t: "wall", p: [2.5, 5.5], q: [2.5, 6.5] },
+    ],
+    p: [[6, 3], [7, 3], [9, 4], [10, 4], [9, 5], [10, 5], [11, 1], [10, 2], [4, 7]],
+  },
+  // Campaign 2: Doors
+  {
+    n: "Doors",
+    s: [1, 2],
+    g: [9, 2],
+    d: [[1, 1, 10, 1], [1, 2, 10, 2], [1, 3, 10, 3], [1, 4, 10, 4], [1, 5, 10, 5], [1, 6, 10, 6], [1, 7, 10, 7]],
+    m: [[8.5, 4], [10.5, 4], [7.5, 7.5]],
+    e: [{ p: [[9, 6]], d: 1 }],
+    i: [
+      { t: "wall", p: [3.5, 0.5], q: [3.5, 1.5] },
+      { t: "wall", p: [3.5, 1.5], q: [3.5, 2.5] },
+      { t: "wall", p: [3.5, 2.5], q: [3.5, 3.5] },
+      { t: "wall", p: [3.5, 3.5], q: [3.5, 4.5] },
+      { t: "door", p: [3.5, 4.5], q: [3.5, 5.5], k: 0, o: 0 },
+      { t: "wall", p: [3.5, 5.5], q: [3.5, 6.5] },
+      { t: "door", p: [3.5, 6.5], q: [3.5, 7.5], k: 0, o: 0 },
+      { t: "wall", p: [3.5, 4.5], q: [4.5, 4.5] },
+      { t: "door", p: [4.5, 4.5], q: [5.5, 4.5], k: 1, o: 0 },
+      { t: "door", p: [5.5, 4.5], q: [6.5, 4.5], k: 1, o: 0 },
+      { t: "wall", p: [6.5, 4.5], q: [7.5, 4.5] },
+      { t: "door", p: [7.5, 0.5], q: [7.5, 1.5], k: 2, o: 0 },
+      { t: "wall", p: [7.5, 1.5], q: [7.5, 2.5] },
+      { t: "door", p: [7.5, 2.5], q: [7.5, 3.5], k: 2, o: 0 },
+      { t: "wall", p: [7.5, 3.5], q: [7.5, 4.5] },
+      { t: "wall", p: [7.5, 4.5], q: [7.5, 5.5] },
+      { t: "wall", p: [7.5, 5.5], q: [7.5, 6.5] },
+      { t: "wall", p: [7.5, 6.5], q: [7.5, 7.5] },
+      { t: "switch", p: [1.5, 4.5], k: 0 },
+      { t: "switch", p: [6.5, 7.5], k: 1 },
+      { t: "switch", p: [9.5, 6.5], k: 2 },
+    ],
+    p: [[7, 2], [8, 2], [5, 4], [6, 4], [5, 5], [6, 5], [3, 6], [4, 6]],
+  },
+  // Campaign 2: Oil
+  {
+    n: "Oil",
+    s: [2, 1],
+    g: [10, 6],
+    d: [[1, 1, 7, 1], [10, 1, 11, 1], [5, 2, 5, 2], [7, 2, 11, 2], [6, 3, 11, 3], [7, 4, 11, 4], [6, 5, 11, 5], [6, 6, 11, 6], [1, 7, 11, 7]],
+    m: [[7.5, 1.5]],
+    i: [
+      { t: "oil", p: [6.5, 2.5], q: [7, 2] },
+    ],
+    p: [[3, 1], [7, 2], [6, 3], [4, 7]],
+  },
+  // Campaign 2: Combo
+  {
+    n: "Combo",
+    s: [2, 1],
+    g: [10, 6],
+    d: [[2, 1, 10, 1], [2, 2, 10, 2], [2, 3, 9, 3], [2, 4, 10, 4], [2, 5, 10, 5], [2, 6, 10, 6]],
+    m: [[2.5, 3.5], [8, 3.5], [8.5, 3.5], [9, 3.5]],
+    e: [{ p: [[9, 5]], d: 1 }],
+    i: [
+      { t: "oil", p: [5.5, 1.5], q: [5, 1] },
+      { t: "wall", p: [2.5, 0.5], q: [3.5, 0.5] },
+      { t: "wall", p: [3.5, 0.5], q: [4.5, 0.5] },
+      { t: "wall", p: [4.5, 0.5], q: [5.5, 0.5] },
+      { t: "wall", p: [5.5, 0.5], q: [6.5, 0.5] },
+      { t: "wall", p: [6.5, 0.5], q: [7.5, 0.5] },
+      { t: "wall", p: [7.5, 0.5], q: [8.5, 0.5] },
+      { t: "wall", p: [8.5, 0.5], q: [9.5, 0.5] },
+      { t: "wall", p: [9.5, 0.5], q: [10.5, 0.5] },
+      { t: "wall", p: [1.5, 1.5], q: [1.5, 2.5] },
+      { t: "wall", p: [1.5, 2.5], q: [1.5, 3.5] },
+      { t: "wall", p: [1.5, 3.5], q: [1.5, 4.5] },
+      { t: "wall", p: [1.5, 4.5], q: [1.5, 5.5] },
+      { t: "wall", p: [1.5, 5.5], q: [1.5, 6.5] },
+      { t: "wall", p: [10.5, 0.5], q: [10.5, 1.5] },
+      { t: "wall", p: [10.5, 1.5], q: [10.5, 2.5] },
+      { t: "wall", p: [10.5, 2.5], q: [10.5, 3.5] },
+      { t: "wall", p: [10.5, 3.5], q: [10.5, 4.5] },
+      { t: "wall", p: [10.5, 4.5], q: [10.5, 5.5] },
+      { t: "wall", p: [10.5, 5.5], q: [10.5, 6.5] },
+      { t: "wall", p: [1.5, 6.5], q: [2.5, 6.5] },
+      { t: "wall", p: [2.5, 6.5], q: [3.5, 6.5] },
+      { t: "wall", p: [3.5, 6.5], q: [4.5, 6.5] },
+      { t: "wall", p: [4.5, 6.5], q: [5.5, 6.5] },
+      { t: "wall", p: [5.5, 6.5], q: [6.5, 6.5] },
+      { t: "wall", p: [6.5, 6.5], q: [7.5, 6.5] },
+      { t: "wall", p: [7.5, 6.5], q: [8.5, 6.5] },
+      { t: "wall", p: [8.5, 6.5], q: [9.5, 6.5] },
+      { t: "wall", p: [9.5, 6.5], q: [10.5, 6.5] },
+      { t: "wall", p: [5.5, 2.5], q: [6.5, 2.5] },
+      { t: "wall", p: [6.5, 2.5], q: [7.5, 2.5] },
+      { t: "wall", p: [7.5, 2.5], q: [7.5, 3.5] },
+      { t: "wall", p: [7.5, 3.5], q: [7.5, 4.5] },
+      { t: "wall", p: [1.5, 4.5], q: [2.5, 4.5] },
+      { t: "wall", p: [2.5, 4.5], q: [3.5, 4.5] },
+      { t: "wall", p: [3.5, 4.5], q: [4.5, 4.5] },
+      { t: "wall", p: [9.5, 2.5], q: [9.5, 3.5] },
+      { t: "wall", p: [9.5, 2.5], q: [10.5, 2.5] },
+      { t: "wall", p: [9.5, 3.5], q: [10.5, 3.5] },
+    ],
+    p: [[8, 3], [9, 3], [2, 5], [2, 6]],
+  },
+  // Campaign 2: More Spikes
+  {
+    n: "More Spikes",
+    s: [2, 1],
+    g: [7, 6],
+    d: [[7, 0, 11, 0], [2, 1, 6, 1], [10, 1, 10, 1], [6, 2, 6, 2], [10, 2, 10, 2], [1, 3, 11, 3], [1, 4, 11, 4], [1, 5, 2, 5], [1, 6, 11, 6], [1, 7, 11, 7]],
+    m: [[3.5, 1.5], [5.5, 0.5], [5.5, 3.5], [8.5, 6.5], [9.5, 6.5], [10.5, 6.5]],
+    e: [{ p: [[10, 2]], d: 1 }, { p: [[1, 7]], d: -1 }],
+    p: [[11, 0], [8, 6], [9, 6], [10, 6], [11, 6], [8, 7], [9, 7]],
+  },
+  // Campaign 2: More Doors
+  {
+    n: "More Doors",
+    s: [6, 1],
+    g: [6, 7],
+    d: [[3, 1, 9, 1], [1, 2, 11, 2], [1, 3, 11, 3], [2, 4, 3, 4], [5, 4, 7, 4], [9, 4, 10, 4], [2, 5, 3, 5], [5, 5, 7, 5], [9, 5, 10, 5], [2, 6, 3, 6], [5, 6, 7, 6], [9, 6, 10, 6], [2, 7, 3, 7], [5, 7, 7, 7], [9, 7, 10, 7]],
+    i: [
+      { t: "wall", p: [4.5, 3.5], q: [4.5, 4.5] },
+      { t: "wall", p: [4.5, 4.5], q: [4.5, 5.5] },
+      { t: "wall", p: [4.5, 5.5], q: [4.5, 6.5] },
+      { t: "wall", p: [4.5, 6.5], q: [4.5, 7.5] },
+      { t: "wall", p: [7.5, 3.5], q: [7.5, 4.5] },
+      { t: "wall", p: [7.5, 4.5], q: [7.5, 5.5] },
+      { t: "wall", p: [7.5, 5.5], q: [7.5, 6.5] },
+      { t: "wall", p: [7.5, 6.5], q: [7.5, 7.5] },
+      { t: "wall", p: [4.5, 7.5], q: [5.5, 7.5] },
+      { t: "wall", p: [5.5, 7.5], q: [6.5, 7.5] },
+      { t: "wall", p: [6.5, 7.5], q: [7.5, 7.5] },
+      { t: "door", p: [4.5, 3.5], q: [5.5, 3.5], k: 2, o: 0 },
+      { t: "door", p: [5.5, 3.5], q: [6.5, 3.5], k: 2, o: 0 },
+      { t: "door", p: [6.5, 3.5], q: [7.5, 3.5], k: 2, o: 0 },
+      { t: "door", p: [4.5, 4.5], q: [5.5, 4.5], k: 0, o: 0 },
+      { t: "door", p: [5.5, 4.5], q: [6.5, 4.5], k: 0, o: 0 },
+      { t: "door", p: [6.5, 4.5], q: [7.5, 4.5], k: 0, o: 0 },
+      { t: "door", p: [4.5, 5.5], q: [5.5, 5.5], k: 1, o: 0 },
+      { t: "door", p: [5.5, 5.5], q: [6.5, 5.5], k: 1, o: 0 },
+      { t: "door", p: [6.5, 5.5], q: [7.5, 5.5], k: 1, o: 0 },
+      { t: "switch", p: [2.5, 3.5], k: 2 },
+      { t: "switch", p: [3.5, 4.5], k: 0 },
+      { t: "switch", p: [1.5, 5.5], k: 1 },
+      { t: "switch", p: [9.5, 3.5], k: 2 },
+      { t: "switch", p: [9.5, 4.5], k: 0 },
+      { t: "switch", p: [9.5, 5.5], k: 1 },
+    ],
+    p: [[6, 4], [6, 5], [2, 7], [3, 7], [9, 7], [10, 7], [5, 7], [7, 7]],
+  },
+  // Campaign 2: Some Dots
+  {
+    n: "Some Dots",
+    s: [2, 1],
+    g: [10, 6],
+    d: [[1, 0, 11, 0], [1, 1, 11, 1], [1, 2, 11, 2], [1, 3, 11, 3], [1, 4, 11, 4], [1, 5, 11, 5], [1, 6, 11, 6], [1, 7, 11, 7]],
+    m: [[10.5, 0.5]],
+    e: [{ p: [[6, 2]], d: 1 }, { p: [[6, 5]], d: -1 }],
+    i: [
+      { t: "ring", p: [1, 0] },
+      { t: "ring", p: [2, 0] },
+      { t: "ring", p: [3, 0] },
+      { t: "ring", p: [4, 0] },
+      { t: "ring", p: [5, 0] },
+      { t: "ring", p: [7, 0] },
+      { t: "ring", p: [8, 0] },
+      { t: "ring", p: [9, 0] },
+      { t: "ring", p: [10, 0] },
+      { t: "ring", p: [11, 0] },
+      { t: "ring", p: [1, 1] },
+      { t: "ring", p: [3, 1] },
+      { t: "ring", p: [4, 1] },
+      { t: "ring", p: [5, 1] },
+      { t: "ring", p: [7, 1] },
+      { t: "ring", p: [8, 1] },
+      { t: "ring", p: [9, 1] },
+      { t: "ring", p: [10, 1] },
+      { t: "ring", p: [11, 1] },
+      { t: "ring", p: [1, 2] },
+      { t: "ring", p: [2, 2] },
+      { t: "ring", p: [3, 2] },
+      { t: "ring", p: [4, 2] },
+      { t: "ring", p: [5, 2] },
+      { t: "ring", p: [8, 2] },
+      { t: "ring", p: [9, 2] },
+      { t: "ring", p: [10, 2] },
+      { t: "ring", p: [11, 2] },
+      { t: "ring", p: [1, 3] },
+      { t: "ring", p: [2, 3] },
+      { t: "ring", p: [3, 3] },
+      { t: "ring", p: [4, 3] },
+      { t: "ring", p: [5, 3] },
+      { t: "ring", p: [7, 3] },
+      { t: "ring", p: [10, 3] },
+      { t: "ring", p: [11, 3] },
+      { t: "ring", p: [1, 4] },
+      { t: "ring", p: [2, 4] },
+      { t: "ring", p: [3, 4] },
+      { t: "ring", p: [4, 4] },
+      { t: "ring", p: [5, 4] },
+      { t: "ring", p: [7, 4] },
+      { t: "ring", p: [8, 4] },
+      { t: "ring", p: [10, 4] },
+      { t: "ring", p: [11, 4] },
+      { t: "ring", p: [1, 5] },
+      { t: "ring", p: [2, 5] },
+      { t: "ring", p: [3, 5] },
+      { t: "ring", p: [5, 5] },
+      { t: "ring", p: [7, 5] },
+      { t: "ring", p: [8, 5] },
+      { t: "ring", p: [9, 5] },
+      { t: "ring", p: [11, 5] },
+      { t: "ring", p: [1, 6] },
+      { t: "ring", p: [2, 6] },
+      { t: "ring", p: [5, 6] },
+      { t: "ring", p: [7, 6] },
+      { t: "ring", p: [8, 6] },
+      { t: "ring", p: [9, 6] },
+      { t: "ring", p: [11, 6] },
+      { t: "ring", p: [1, 7] },
+      { t: "ring", p: [2, 7] },
+      { t: "ring", p: [3, 7] },
+      { t: "ring", p: [4, 7] },
+      { t: "ring", p: [5, 7] },
+      { t: "ring", p: [6, 7] },
+      { t: "ring", p: [7, 7] },
+      { t: "ring", p: [8, 7] },
+      { t: "ring", p: [9, 7] },
+      { t: "ring", p: [10, 7] },
+      { t: "ring", p: [11, 7] },
+      { t: "shield", p: [6, 3] },
+      { t: "station", p: [4, 6] },
+      { t: "station", p: [9, 3] },
+      { t: "door", p: [8.5, 4.5], q: [9.5, 4.5], k: 0, o: 0 },
+      { t: "door", p: [9.5, 4.5], q: [10.5, 4.5], k: 0, o: 0 },
+      { t: "door", p: [10.5, 4.5], q: [11.5, 4.5], k: 0, o: 0 },
+      { t: "switch", p: [1.5, 5.5], k: 0 },
+    ],
+    p: [[10, 0], [10, 1], [11, 1], [8, 3], [9, 4], [10, 5], [4, 5], [3, 6]],
+  },
+  // Campaign 2: Bombs
+  {
+    n: "Bombs",
+    s: [2, 5],
+    g: [9, 1],
+    d: [[1, 0, 11, 0], [1, 1, 11, 1], [1, 2, 11, 2], [1, 3, 11, 3], [1, 4, 11, 4], [1, 5, 11, 5], [1, 6, 11, 6], [1, 7, 11, 7]],
+    m: [[7, 3.5], [7, 4.5]],
+    e: [{ p: [[6, 6], [7, 6], [8, 6]] }, { p: [[9, 3], [9, 4], [9, 5], [9, 6], [9, 7]] }],
+    i: [
+      { t: "hourglass", p: [5, 1] },
+      { t: "hourglass", p: [10, 4] },
+      { t: "bomb", p: [7.5, 1.5], q: [3.5, 2.5] },
+      { t: "wall", p: [7.5, -0.5], q: [7.5, 0.5] },
+      { t: "wall", p: [7.5, 0.5], q: [7.5, 1.5] },
+      { t: "wall", p: [7.5, 2.5], q: [8.5, 2.5] },
+      { t: "wall", p: [8.5, 2.5], q: [9.5, 2.5] },
+      { t: "wall", p: [9.5, 2.5], q: [10.5, 2.5] },
+    ],
+    p: [[5, 1], [10, 4]],
+  },
+  // Campaign 2: Curves
+  {
+    n: "Curves",
+    s: [2, 1],
+    g: [9, 6],
+    d: [[2, 1, 3, 1], [6, 1, 10, 1], [2, 2, 3, 2], [6, 2, 10, 2], [2, 3, 3, 3], [6, 3, 7, 3], [9, 3, 10, 3], [2, 4, 3, 4], [6, 4, 7, 4], [9, 4, 10, 4], [2, 5, 7, 5], [9, 5, 10, 5], [2, 6, 7, 6], [9, 6, 10, 6]],
+    e: [{ p: [[8, 2]], d: 1 }, { p: [[3, 5]], d: -1 }, { p: [[7, 6]], d: 1 }],
+    i: [
+      { t: "station", p: [6, 1] },
+      { t: "station", p: [5, 6] },
+    ],
+    p: [[9, 4], [10, 4], [9, 5], [10, 5]],
+  },
+  // Campaign 2: Homer
+  {
+    n: "Homer",
+    s: [3, 4],
+    g: [9, 4],
+    d: [[6, 1, 6, 1], [5, 2, 7, 2], [4, 3, 8, 3], [3, 4, 9, 4], [4, 5, 8, 5], [5, 6, 7, 6], [6, 7, 6, 7]],
+    e: [{ p: [[6, 1]], d: 1 }, { p: [[6, 7]], d: -1 }],
+    p: [[6, 4], [5, 6], [6, 6], [7, 6]],
+  },
+  // Campaign 2: Touchdown
+  {
+    n: "Touchdown",
+    s: [1, 4],
+    g: [10, 4],
+    d: [[4, 2, 5, 2], [3, 3, 6, 3], [8, 3, 10, 3], [1, 4, 10, 4], [3, 5, 6, 5], [8, 5, 10, 5], [4, 6, 5, 6]],
+    e: [{ p: [[5, 2]], d: 1 }, { p: [[5, 4]], d: -1 }, { p: [[5, 6]], d: 1 }],
+    i: [
+      { t: "wall", p: [7.5, 2.5], q: [8.5, 2.5] },
+      { t: "wall", p: [8.5, 2.5], q: [9.5, 2.5] },
+      { t: "wall", p: [9.5, 2.5], q: [10.5, 2.5] },
+      { t: "wall", p: [7.5, 5.5], q: [8.5, 5.5] },
+      { t: "wall", p: [8.5, 5.5], q: [9.5, 5.5] },
+      { t: "wall", p: [9.5, 5.5], q: [10.5, 5.5] },
+      { t: "door", p: [7.5, 2.5], q: [7.5, 3.5], k: 2, o: 0 },
+      { t: "door", p: [7.5, 3.5], q: [7.5, 4.5], k: 2, o: 0 },
+      { t: "door", p: [7.5, 4.5], q: [7.5, 5.5], k: 2, o: 0 },
+      { t: "door", p: [8.5, 2.5], q: [8.5, 3.5], k: 0, o: 0 },
+      { t: "door", p: [8.5, 4.5], q: [8.5, 5.5], k: 0, o: 0 },
+      { t: "switch", p: [3.5, 5.5], k: 2 },
+      { t: "switch", p: [5.5, 6.5], k: 0 },
+    ],
+    p: [[8, 3], [9, 3], [8, 5], [9, 5]],
+  },
+  // Campaign 2: Tenacity
+  {
+    n: "Tenacity",
+    s: [2, 0],
+    g: [10, 6],
+    d: [[1, 0, 11, 0], [1, 1, 11, 1], [1, 2, 11, 2], [1, 3, 11, 3], [1, 4, 11, 4], [1, 5, 11, 5], [1, 6, 11, 6], [1, 7, 11, 7]],
+    e: [{ p: [[9, 0]], d: 1 }, { p: [[1, 5]], d: -1 }],
+    i: [
+      { t: "hourglass", p: [4, 3] },
+      { t: "hourglass", p: [4, 5] },
+      { t: "hourglass", p: [9, 3] },
+      { t: "wall", p: [8.5, -0.5], q: [8.5, 0.5] },
+      { t: "door", p: [8.5, 0.5], q: [8.5, 1.5], k: 2, o: 0 },
+      { t: "door", p: [8.5, 1.5], q: [8.5, 2.5], k: 2, o: 0 },
+      { t: "wall", p: [8.5, 2.5], q: [9.5, 2.5] },
+      { t: "wall", p: [9.5, 2.5], q: [10.5, 2.5] },
+      { t: "wall", p: [10.5, 2.5], q: [11.5, 2.5] },
+      { t: "wall", p: [0.5, 4.5], q: [1.5, 4.5] },
+      { t: "wall", p: [1.5, 4.5], q: [2.5, 4.5] },
+      { t: "wall", p: [2.5, 4.5], q: [3.5, 4.5] },
+      { t: "door", p: [3.5, 4.5], q: [3.5, 5.5], k: 0, o: 0 },
+      { t: "door", p: [3.5, 5.5], q: [3.5, 6.5], k: 0, o: 0 },
+      { t: "wall", p: [3.5, 6.5], q: [3.5, 7.5] },
+      { t: "wall", p: [8.5, 4.5], q: [9.5, 4.5] },
+      { t: "wall", p: [9.5, 4.5], q: [10.5, 4.5] },
+      { t: "wall", p: [10.5, 4.5], q: [11.5, 4.5] },
+      { t: "door", p: [8.5, 4.5], q: [8.5, 5.5], k: 1, o: 0 },
+      { t: "door", p: [8.5, 5.5], q: [8.5, 6.5], k: 1, o: 0 },
+      { t: "wall", p: [8.5, 6.5], q: [8.5, 7.5] },
+      { t: "switch", p: [4.5, 1.5], k: 0 },
+      { t: "switch", p: [1.5, 6.5], k: 2 },
+      { t: "switch", p: [10.5, 0.5], k: 1 },
+    ],
+    p: [[4, 3], [4, 5], [9, 3], [6, 3], [11, 0], [11, 3]],
+  },
 ].map(expandLevel);
 [
   [
@@ -1288,7 +1677,11 @@ const KEY_COLORS = ["#d98c00", "#9b4dca", "#00979d"];
 const BULLET_SPEED = 180; // pixels per second
 const FUSE_TIME = 2.4; // seconds from lighting a bomb to the explosion
 const BLAST_RADIUS = 90; // pixels
-const CAMPAIGN_LEVELS = 20; // the campaign covers the first 20 levels; later levels are practice levels
+// The campaigns: the range of levels each one covers (indexes into LEVELS). Every other level is a practice level.
+const CAMPAIGNS = {
+  1: { first: 0, last: 19, title: "Campaign" },
+  2: { first: 28, last: 41, title: "Campaign 2" },
+};
 
 // What each object needs: a number code for level codes, the kind of each position, and its extra fields.
 const ITEM_SCHEMA = {
@@ -2151,6 +2544,14 @@ function openEditor() {
 }
 
 // Shows or hides the menu, editor tools and library panels, and updates the level label.
+// "Level 3/14: Walls": position within the campaign (or within all levels when practising) and the level name.
+function levelLabel() {
+  const first = campaign ? CAMPAIGNS[campaign.set].first : 0;
+  const total = campaign ? CAMPAIGNS[campaign.set].last - first + 1 : LEVELS.length;
+  const name = currentLevel && currentLevel.name ? ": " + currentLevel.name : "";
+  return "Level " + (levelIndex - first + 1) + "/" + total + name;
+}
+
 function updateUI() {
   qs("#menu").hidden = gameMode != "menu";
   if (gameMode != "menu") {
@@ -2167,7 +2568,7 @@ function updateUI() {
           ? "Library"
           : isTesting
             ? "Testing"
-            : customLevelName || "Level " + (levelIndex + 1) + "/" + LEVELS.length;
+            : customLevelName || levelLabel();
   qs("#hint").textContent =
     gameMode == "edit"
       ? "Pick a tool, then click grid points (mines snap to the center of four dots). Enemy path: click adjacent dots, then Finish (Enter or right-click). One point makes a spinner; more makes a patrol. Place item: pick an object in the list; walls, doors, bombs, oil and hyperdots take two clicks."
@@ -2833,15 +3234,16 @@ const formatTime = (ms) => {
 const campaignElapsedMs = () => (campaign.done ? campaign.final : performance.now() - campaign.t0);
 
 // Starts a campaign run from level 1.
-function startCampaign(m) {
+function startCampaign(m, set) {
   campaign = {
     mode: m,
+    set: set,
     t0: performance.now(),
     pts: 0,
     done: false,
     final: 0,
   };
-  playBuiltInLevel(0);
+  playBuiltInLevel(CAMPAIGNS[set].first);
 }
 
 // After a death. Hard: back to level 1 with the clock and points reset. Regular: retry the same level, clock keeps running.
@@ -2849,19 +3251,19 @@ function retryAfterDeath() {
   if (campaign && campaign.mode == "hard") {
     campaign.t0 = performance.now();
     campaign.pts = 0;
-    playBuiltInLevel(0);
+    playBuiltInLevel(CAMPAIGNS[campaign.set].first);
   } else {
     retryLevel();
   }
 }
 
-// Adds the points from a cleared level to the campaign total and stops the clock after level 20.
+// Adds the points from a cleared level to the campaign total and stops the clock after the campaign's last level.
 function recordCampaignWin() {
   if (!campaign) {
     return;
   }
   campaign.pts += score;
-  if (levelIndex >= CAMPAIGN_LEVELS - 1) {
+  if (levelIndex >= CAMPAIGNS[campaign.set].last) {
     campaign.done = true;
     campaign.final = performance.now() - campaign.t0;
   }
@@ -2869,7 +3271,8 @@ function recordCampaignWin() {
 
 // Draws the end-of-campaign summary with total points and total time.
 function drawCampaignSummary() {
-  const all = LEVELS.slice(0, CAMPAIGN_LEVELS).reduce((a, l) => a + (l.pt || []).length, 0);
+  const set = CAMPAIGNS[campaign.set];
+  const all = LEVELS.slice(set.first, set.last + 1).reduce((a, l) => a + (l.pt || []).length, 0);
   ctx.fillStyle = colors.bg;
   ctx.globalAlpha = 0.94;
   ctx.fillRect(120, 150, 600, 300);
@@ -2880,7 +3283,7 @@ function drawCampaignSummary() {
   ctx.textAlign = "center";
   ctx.fillStyle = colors.good;
   ctx.font = "bold 36px system-ui,sans-serif";
-  ctx.fillText("Campaign complete!", 420, 212);
+  ctx.fillText(set.title + " complete!", 420, 212);
   ctx.fillStyle = colors.dim;
   ctx.font = "18px system-ui,sans-serif";
   ctx.fillText((campaign.mode == "hard" ? "Hard" : "Regular") + " mode", 420, 244);
@@ -2892,11 +3295,24 @@ function drawCampaignSummary() {
   ctx.font = "16px system-ui,sans-serif";
   ctx.fillText("Enter / A to return to the menu", 420, 418);
 }
-qs("#bCamp").onclick = () => {
-  qs("#cmp").hidden = !qs("#cmp").hidden;
+// Which campaign the Regular and Hard buttons will start.
+let chosenCampaign = 1;
+const CAMPAIGN_BLURB = {
+  1: "Levels 1 to 20, timed.",
+  2: "14 levels based on the original Spin Doctor, timed.",
 };
-qs("#bReg").onclick = () => startCampaign("regular");
-qs("#bHard").onclick = () => startCampaign("hard");
+function chooseCampaign(set) {
+  const panel = qs("#cmp");
+  panel.hidden = !panel.hidden && chosenCampaign == set;
+  chosenCampaign = set;
+  qs("#cmpText").innerHTML =
+    CAMPAIGN_BLURB[set] +
+    " <b>Regular:</b> if you die, retry the level and the clock keeps running. <b>Hard:</b> if you die, back to the first level and the clock resets.";
+}
+qs("#bCamp").onclick = () => chooseCampaign(1);
+qs("#bCamp2").onclick = () => chooseCampaign(2);
+qs("#bReg").onclick = () => startCampaign("regular", chosenCampaign);
+qs("#bHard").onclick = () => startCampaign("hard", chosenCampaign);
 
 // ============================================================
 // SOUND EFFECTS
